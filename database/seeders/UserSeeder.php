@@ -18,6 +18,7 @@ class UserSeeder extends Seeder
                 'role' => 'admin',
                 'users' => [
                     'admin@mail.test',
+                    'admin2@mail.test'
                 ]
             ],
             [
@@ -47,14 +48,19 @@ class UserSeeder extends Seeder
             $role = $user['role'];
             $users = $user['users'];
 
-            foreach ($users as $email) {
-                User::factory()->create([
-                    'email' => $email
-                ])
-                    ->each(function ($user) use ($role) {
-                        $user->assignRole($role);
-                    });
-            }
+            User::factory()->create([
+                'email' => $users[0]
+            ])
+                ->each(function ($user) use ($role) {
+                    $user->assignRole($role);
+                });
+
+            User::factory()->unverified()->create([
+                'email' => $users[1]
+            ])
+                ->each(function ($user) use ($role) {
+                    $user->assignRole($role);
+                });
         }
 
         User::factory(10)->create()->each(function ($user) {
