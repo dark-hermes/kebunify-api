@@ -14,16 +14,46 @@ class RoleSeeder extends Seeder
     public function run(): void
     {
         $roles = [
-            'admin',
-            'user',
-            'seller',
-            'expert'
+            [
+                'name' => 'admin',
+                'permissions' => [
+                    'create_role',
+                    'view_role',
+                    'update_role',
+                    'delete_role',
+                    'create_user',
+                    'view_user',
+                    'update_user',
+                    'delete_user',
+                ]
+            ],
+            [
+                'name' => 'user',
+                'permissions' => [
+                    //
+                ]
+            ],
+            [
+                'name' => 'seller',
+                'permissions' => [
+                    //
+                ]
+            ],
+            [
+                'name' => 'expert',
+                'permissions' => [
+                    //
+                ]
+            ]
         ];
 
         foreach ($roles as $role) {
-            Role::create([
-                'name' => $role
+            $newRole = Role::create([
+                'name' => $role['name'],
+                'guard_name' => 'sanctum',
             ]);
+
+            $newRole->givePermissionTo($role['permissions']);
         }
     }
 }
