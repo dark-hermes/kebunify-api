@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ConsultationController;
 use App\Http\Controllers\VerificationEmailController;
 
 Route::group(['middleware' => 'guest'], function () {
@@ -20,4 +21,12 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     Route::apiResource('roles', RoleController::class);
     Route::apiResource('users', UserController::class);
+
+    Route::get('/consultations', [ConsultationController::class, 'index']);
+    Route::get('/consultations/user/{user_id}', [ConsultationController::class, 'getByUserId']);
+    Route::get('/consultations/{id}', [ConsultationController::class, 'show']);
+    Route::post('/consultations', [ConsultationController::class, 'store']);
+    Route::put('/consultations/{id}', [ConsultationController::class, 'update']);
+    Route::put('/consultations/change-status/{id}', [ConsultationController::class, 'changeStatus']);
+    Route::delete('/consultations/{id}', [ConsultationController::class, 'destroy']);
 });
