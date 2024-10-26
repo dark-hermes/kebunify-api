@@ -17,6 +17,7 @@ return new class extends Migration
             $table->text('description');
             $table->enum('status', ['open', 'closed']);
             $table->enum('content_payment_status', ['paid', 'unpaid', 'pending']);
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }
