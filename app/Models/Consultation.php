@@ -12,7 +12,7 @@ use Spatie\Permission\Traits\HasRoles;
 
 class Consultation extends Model
 {
-    use HasFactory, Notifiable, HasRoles, HasApiTokens;
+    use HasFactory;
     protected $fillable = ['topic', 
                             'status', 
                             'description',
