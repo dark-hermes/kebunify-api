@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 
 use Illuminate\Http\Request;
 
-class consultationController extends Controller
+class ConsultationController extends Controller
 {
     public function index(Request $request)
     {
