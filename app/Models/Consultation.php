@@ -10,7 +10,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
-class consultation extends Model
+class Consultation extends Model
 {
     use HasFactory, Notifiable, HasRoles, HasApiTokens;
     protected $fillable = ['topic', 
