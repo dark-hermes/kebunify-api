@@ -11,14 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('consultations', function (Blueprint $table) {
+        Schema::create('chats', function (Blueprint $table) {
             $table->id();
-            $table->string('topic');
-            $table->text('description');
-            $table->enum('status', ['open', 'closed']);
-            $table->enum('content_payment_status', ['paid', 'unpaid', 'pending']);
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('expert_id')->constrained()->onDelete('cascade');
+            $table->foreignId('consultation_id')->constrained()->onDelete('cascade');
+            $table->text('message');
+            $table->boolean('is_read')->default(false);
             $table->timestamps();
         });
     }
@@ -28,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('consultation');
+        Schema::dropIfExists('chats');
     }
 };
