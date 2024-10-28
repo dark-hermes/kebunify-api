@@ -16,9 +16,73 @@ class UserController extends Controller implements HasMiddleware
         return [
             new Middleware(PermissionMiddleware::using('create_user,sanctum'), only: ['store']),
             new Middleware(PermissionMiddleware::using('view_user,sanctum'), only: ['index', 'show']),
-            new Middleware(PermissionMiddleware::using('update_user,sanctum'), only: ['update']),
+            new Middleware(PermissionMiddleware::using('update_user,sanctum'), only: ['update, storeAvatar']),
             new Middleware(PermissionMiddleware::using('delete_user,sanctum'), only: ['destroy']),
         ];
+    }
+
+    public function storeAvatar(Request $request, string $id)
+    {
+        $request->validate([
+            'avatar' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ]);
+
+        try {
+            $user = User::find($id);
+
+            if (!$user) {
+                return response()->json([
+                    'message' => __('http-statuses.404'),
+                ], 404);
+            }
+
+            if ($request->hasFile('avatar')) {
+                $avatar = $request->file('avatar');
+                $avatarName = time() . '.' . $avatar->getClientOriginalExtension();
+                $avatar->move(public_path('images'), $avatarName);
+
+                $user->update([
+                    'avatar' => $avatarName,
+                ]);
+            }
+
+            return response()->json([
+                'message' => __('http-statuses.200'),
+                'data' => $user,
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('http-statuses.500'),
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    public function removeAvatar(string $id)
+    {
+        try {
+            $user = User::find($id);
+
+            if (!$user) {
+                return response()->json([
+                    'message' => __('http-statuses.404'),
+                ], 404);
+            }
+
+            $user->update([
+                'avatar' => null,
+            ]);
+
+            return response()->json([
+                'message' => __('http-statuses.200'),
+                'data' => $user,
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('http-statuses.500'),
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
+        }
     }
 
     /**
@@ -64,6 +128,8 @@ class UserController extends Controller implements HasMiddleware
             'password' => 'required|string|min:8',
             'password_confirmation' => 'required|same:password',
             'roles' => 'array|nullable',
+            'phone' => 'string|nullable',
+            'avatar' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048|nullable',
         ]);
 
         try  {
@@ -129,6 +195,7 @@ class UserController extends Controller implements HasMiddleware
             'name' => 'required|string',
             'email' => 'required|email|unique:users,email,' . $id,
             'roles' => 'array|nullable',
+            'phone' => 'string|nullable',
         ]);
 
         try {

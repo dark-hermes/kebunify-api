@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('expert_specializations', function (Blueprint $table) {
             $table->id();
-
+            $table->string('name')->unique();
             $table->timestamps();
         });
     }
