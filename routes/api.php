@@ -7,9 +7,8 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ExpertController;
 use App\Http\Controllers\ConsultationController;
-use App\Http\Controllers\ExpertController;
+use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\VerificationEmailController;
-use App\Http\Controllers\ExpertSpecializationController;
 
 Route::group(['middleware' => 'guest'], function () {
     Route::post('/login',  [AuthController::class, 'login'])->name('login')->middleware('throttle:6,1');
@@ -40,12 +39,9 @@ Route::group(['middleware' => 'auth:sanctum'], function () {name:
     Route::post('/experts/promote/{user_id}', [ExpertController::class, 'promote']);
     Route::apiResource('experts', ExpertController::class);
 
-=======
     Route::apiResource('users', UserController::class);
     Route::post('users/{id}/upload-avatar', [UserController::class, 'storeAvatar']);
     Route::delete('users/{id}/remove-avatar', [UserController::class, 'removeAvatar']);
-
-    Route::apiResource('expert-specializations', ExpertSpecializationController::class);
 
     Route::apiResource('experts', ExpertController::class);
 
@@ -57,6 +53,3 @@ Route::group(['middleware' => 'auth:sanctum'], function () {name:
     Route::put('consultations/change-status/{id}', [ConsultationController::class, 'changeStatus']);
     Route::delete('consultations/{id}', [ConsultationController::class, 'destroy']);
 });
-
-<<<<<<< HEAD
->>>>>>> 272d906dcaa1fabb785e742f7cae72a6de99a567
