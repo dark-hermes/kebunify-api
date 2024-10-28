@@ -22,7 +22,6 @@ Route::group(['middleware' => 'auth:sanctum'], function () {name:
 
     Route::apiResource('roles', RoleController::class);
 
-<<<<<<< HEAD
     Route::get('/consultations', [ConsultationController::class, 'index']);
     Route::get('/consultations/user/{user_id}', [ConsultationController::class, 'getByUserId']);
     Route::get('/consultations/{id}', [ConsultationController::class, 'show']);
@@ -36,6 +35,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {name:
     Route::post('/experts/promote/{user_id}', [ExpertController::class, 'promote']);
     Route::apiResource('experts', ExpertController::class);
 
+=======
     Route::apiResource('users', UserController::class);
     Route::post('users/{id}/upload-avatar', [UserController::class, 'storeAvatar']);
     Route::delete('users/{id}/remove-avatar', [UserController::class, 'removeAvatar']);
@@ -48,7 +48,6 @@ Route::group(['middleware' => 'auth:sanctum'], function () {name:
     Route::put('consultations/change-status/{id}', [ConsultationController::class, 'changeStatus']);
     Route::delete('consultations/{id}', [ConsultationController::class, 'destroy']);
 });
-=======
 
-
+<<<<<<< HEAD
 >>>>>>> 272d906dcaa1fabb785e742f7cae72a6de99a567
