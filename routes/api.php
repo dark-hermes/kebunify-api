@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ConsultationController;
+use App\Http\Controllers\ExpertController;
 use App\Http\Controllers\VerificationEmailController;
 
 Route::group(['middleware' => 'guest'], function () {
@@ -29,4 +30,9 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::put('/consultations/{id}', [ConsultationController::class, 'update']);
     Route::put('/consultations/change-status/{id}', [ConsultationController::class, 'changeStatus']);
     Route::delete('/consultations/{id}', [ConsultationController::class, 'destroy']);
+
+
+    Route::get('/experts/leaderboard', [ExpertController::class, 'leaderboard']);
+    Route::post('/experts/promote/{user_id}', [ExpertController::class, 'promote']);
+    Route::apiResource('experts', ExpertController::class);
 });
