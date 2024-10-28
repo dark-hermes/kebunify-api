@@ -17,10 +17,19 @@ class ExpertFactory extends Factory
     public function definition(): array
     {
         return [
-            'start_year' => $this->faker->numberBetween(2010, 2021),
-            'consulting_fee' => $this->faker->numberBetween(30000, 100000),
-            'discount' => $this->faker->numberBetween(0, 50),
-            'bio' => $this->faker->paragraph,
+            // random item in array
+            'specialization' => $this->faker->randomElement([
+                'Agronomi',
+                'Hortikultura',
+                'Fitopatologi',
+                'Entomologi',
+                'Agroekologi',
+                'Agroteknologi',
+                'Pemuliaan Tanaman',
+                'Perkebunan Berkelanjutan',
+                'Manajemen Perkebunan',
+                'Klimatologi Pertanian']),
+            'consultation_price' => $this->faker->randomFloat(2, 30000, 100000),
         ];
     }
 }
