@@ -5,9 +5,86 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Spatie\Permission\Middleware\PermissionMiddleware;
 
-class UserController extends Controller
+class UserController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware(PermissionMiddleware::using('create_user,sanctum'), only: ['store']),
+            new Middleware(PermissionMiddleware::using('view_user,sanctum'), only: ['index', 'show']),
+            new Middleware(PermissionMiddleware::using('update_user,sanctum'), only: ['update, storeAvatar']),
+            new Middleware(PermissionMiddleware::using('delete_user,sanctum'), only: ['destroy']),
+        ];
+    }
+
+    public function storeAvatar(Request $request, string $id)
+    {
+        $request->validate([
+            'avatar' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ]);
+
+        try {
+            $user = User::find($id);
+
+            if (!$user) {
+                return response()->json([
+                    'message' => __('http-statuses.404'),
+                ], 404);
+            }
+
+            if ($request->hasFile('avatar')) {
+                $avatar = $request->file('avatar');
+                $avatarName = time() . '.' . $avatar->getClientOriginalExtension();
+                $avatar->move(public_path('images'), $avatarName);
+
+                $user->update([
+                    'avatar' => $avatarName,
+                ]);
+            }
+
+            return response()->json([
+                'message' => __('http-statuses.200'),
+                'data' => $user,
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('http-statuses.500'),
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    public function removeAvatar(string $id)
+    {
+        try {
+            $user = User::find($id);
+
+            if (!$user) {
+                return response()->json([
+                    'message' => __('http-statuses.404'),
+                ], 404);
+            }
+
+            $user->update([
+                'avatar' => null,
+            ]);
+
+            return response()->json([
+                'message' => __('http-statuses.200'),
+                'data' => $user,
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('http-statuses.500'),
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
+        }
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -24,9 +101,9 @@ class UserController extends Controller
                 })
                 ->with('roles');
 
-            $users = $users
-                ? $users->paginate($paginate)
-                : $users->get();
+            $users = ! $paginate
+                ? $users->get()
+                : $users->paginate($paginate);
 
             return response()->json([
                 'message' => __('http-statuses.200'),
@@ -51,6 +128,8 @@ class UserController extends Controller
             'password' => 'required|string|min:8',
             'password_confirmation' => 'required|same:password',
             'roles' => 'array|nullable',
+            'phone' => 'string|nullable',
+            'avatar' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048|nullable',
         ]);
 
         try  {
@@ -116,6 +195,7 @@ class UserController extends Controller
             'name' => 'required|string',
             'email' => 'required|email|unique:users,email,' . $id,
             'roles' => 'array|nullable',
+            'phone' => 'string|nullable',
         ]);
 
         try {
