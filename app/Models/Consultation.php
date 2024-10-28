@@ -13,12 +13,15 @@ use Spatie\Permission\Traits\HasRoles;
 class Consultation extends Model
 {
     use HasFactory;
-    protected $fillable = ['topic', 
-                            'status', 
-                            'description',
-                            'content_status_payment',
-                            'user_id'];
-    public function user() {
+    protected $fillable = [
+        'topic',
+        'status',
+        'description',
+        'content_status_payment',
+        'user_id'
+    ];
+    public function user()
+    {
         return $this->belongsTo(User::class);
     }
 }

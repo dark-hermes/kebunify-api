@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class RoleSeeder extends Seeder
@@ -17,14 +18,7 @@ class RoleSeeder extends Seeder
             [
                 'name' => 'admin',
                 'permissions' => [
-                    'create_role',
-                    'view_role',
-                    'update_role',
-                    'delete_role',
-                    'create_user',
-                    'view_user',
-                    'update_user',
-                    'delete_user',
+                    '*',
                 ]
             ],
             [
@@ -53,7 +47,13 @@ class RoleSeeder extends Seeder
                 'guard_name' => 'sanctum',
             ]);
 
-            $newRole->givePermissionTo($role['permissions']);
+            if ($role['permissions']) {
+                if ($role['permissions'][0] === '*') {
+                    $newRole->givePermissionTo(Permission::all());
+                } else {
+                    $newRole->givePermissionTo($role['permissions']);
+                }
+            }
         }
     }
 }
