@@ -244,7 +244,9 @@ class UserController extends Controller implements HasMiddleware
                 ], 404);
             }
 
-            $user->delete();
+            DB::transaction(function () use ($user) {
+                $user->delete();
+            });
 
             return response()->json([
                 'message' => __('http-statuses.200'),
