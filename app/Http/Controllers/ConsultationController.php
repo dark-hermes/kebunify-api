@@ -43,6 +43,7 @@ class ConsultationController extends Controller
     {
         $consultation = Consultation::create([
             'user_id' => Auth::id(),
+            'expert_id' => $request->expert_id,
             'topic' => $request->topic,
             'description' => $request->description,
             'status' => 'open',
