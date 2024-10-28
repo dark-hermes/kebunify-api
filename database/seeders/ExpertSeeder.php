@@ -20,7 +20,6 @@ class ExpertSeeder extends Seeder
         foreach ($experts as $expert) {
             Expert::factory()->create([
                 'user_id' => $expert->id,
-                'expert_specialization_id' => ExpertSpecialization::inRandomOrder()->first()->id,
             ]);
         }
     }
