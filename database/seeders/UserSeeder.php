@@ -48,23 +48,17 @@ class UserSeeder extends Seeder
             $role = $user['role'];
             $users = $user['users'];
 
-            User::factory()->create([
+            $newUser = User::factory()->create([
                 'email' => $users[0]
-            ])
-                ->each(function ($user) use ($role) {
-                    $user->assignRole($role);
-                });
+            ]);
+            $newUser->assignRole($role);
 
-            User::factory()->unverified()->create([
+            $newUserUnv = User::factory()->unverified()->create([
                 'email' => $users[1]
-            ])
-                ->each(function ($user) use ($role) {
-                    $user->assignRole($role);
-                });
+            ]);
+            $newUserUnv->assignRole($role);
         }
 
-        User::factory(10)->create()->each(function ($user) {
-            $user->assignRole('user');
-        });
+        User::factory(10)->create();
     }
 }

@@ -5,9 +5,22 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
+use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Spatie\Permission\Middleware\PermissionMiddleware;
 
-class RoleController extends Controller
+class RoleController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware(PermissionMiddleware::using('create_role,sanctum'), only: ['store']),
+            new Middleware(PermissionMiddleware::using('view_role,sanctum'), only: ['index', 'show']),
+            new Middleware(PermissionMiddleware::using('update_role,sanctum'), only: ['update']),
+            new Middleware(PermissionMiddleware::using('delete_role,sanctum'), only: ['destroy']),
+        ];
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -22,7 +35,7 @@ class RoleController extends Controller
                     return $query->where('name', 'like', '%' . $search . '%');
                 })->with('permissions');
 
-            $roles = $roles
+            $roles = $paginate
                 ? $roles->paginate($paginate)
                 : $roles->get();
 

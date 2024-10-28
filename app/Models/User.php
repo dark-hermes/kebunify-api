@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
-use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -23,6 +24,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'name',
         'email',
         'password',
+        'avatar',
+        'phone'
     ];
 
     /**
@@ -53,5 +56,33 @@ class User extends Authenticatable implements MustVerifyEmail
     protected function getDefaultGuardName(): string
     {
         return 'sanctum';
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::created(function ($user) {
+            $user->assignRole('user');
+        });
+
+        static::deleting(function ($user) {
+            if ($user->avatar) {
+                Storage::delete($user->avatar);
+            }
+        });
+    }
+
+    public function getAvatarUrlAttribute(): ?string
+    {
+        if ($this->avatar) {
+            if (str_starts_with($this->avatar, 'http')) {
+                return $this->avatar;
+            } else {
+                return Storage::url( $this->avatar);
+            }
+        } else {
+            return asset('images/placeholders/user.webp');
+        }
     }
 }
