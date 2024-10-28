@@ -5,9 +5,22 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Spatie\Permission\Middleware\PermissionMiddleware;
 
-class UserController extends Controller
+class UserController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware(PermissionMiddleware::using('create_user,sanctum'), only: ['store']),
+            new Middleware(PermissionMiddleware::using('view_user,sanctum'), only: ['index', 'show']),
+            new Middleware(PermissionMiddleware::using('update_user,sanctum'), only: ['update']),
+            new Middleware(PermissionMiddleware::using('delete_user,sanctum'), only: ['destroy']),
+        ];
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -24,9 +37,9 @@ class UserController extends Controller
                 })
                 ->with('roles');
 
-            $users = $users
-                ? $users->paginate($paginate)
-                : $users->get();
+            $users = ! $paginate
+                ? $users->get()
+                : $users->paginate($paginate);
 
             return response()->json([
                 'message' => __('http-statuses.200'),
