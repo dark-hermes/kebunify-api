@@ -13,6 +13,7 @@ use App\Http\Controllers\VerificationEmailController;
 
 Route::group(['middleware' => 'guest'], function () {
     Route::post('/login',  [AuthController::class, 'login'])->name('login')->middleware('throttle:6,1');
+    Route::post('/register', [AuthController::class, 'register'])->name('register');
 
     Route::post('/email/password', [PasswordResetController::class, 'setResetLinkEmail']);
     Route::post('/email/password-reset', [PasswordResetController::class, 'reset'])->middleware('signed')->name('password.reset');
