@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -46,5 +47,25 @@ class AuthController extends Controller
         return response()->json($request->user());
     }
 
-    // public function
+    public function register(Request $request){
+    
+        $data = Validator::make($request->all(), [
+        
+            'name' => 'required',
+            'email' => ['required', 'email'],
+            'password' => 'required'
+        ]);
+
+        if($data->fails()){
+            return response()->json('Formmu belum sesuai', 406);
+        }
+        else{
+            User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password)
+            ]);
+            return response()->json('Akun anda telah dibuat',200);
+        }
+    }
 }
