@@ -1,0 +1,32 @@
+[
+    {
+        "title": "Pertanian Indonesia",
+        "content": "Pertanian Indonesia adalah salah satu sektor yang sangat penting bagi perekonomian Indonesia. Sebagian besar penduduk Indonesia bekerja di sektor pertanian. Berbagai jenis tanaman ditanam di Indonesia, seperti padi, jagung, kacang tanah, dan lain-lain. Indonesia juga memiliki berbagai jenis tanaman hias yang sangat indah. Pertanian Indonesia memiliki potensi yang sangat besar untuk dikembangkan lebih lanjut. Dengan teknologi yang tepat, pertanian Indonesia dapat menjadi salah satu sektor yang sangat menguntungkan bagi perekonomian Indonesia.",
+        "tags": ["pertanian", "indonesia", "perekonomian"],
+        "image": "https://www.pasarmikro.id/buletin/wp-content/uploads/sites/6/2023/07/pasarmikro-slider-bg-pertanian-berkelanjutan-57-1920p-990p.jpg"
+    },
+    {
+        "title": "Perkebunan Kelapa Sawit",
+        "content": "Perkebunan kelapa sawit adalah salah satu sektor yang sangat penting bagi perekonomian Indonesia. Kelapa sawit adalah salah satu tanaman yang sangat menguntungkan bagi petani. Minyak kelapa sawit digunakan untuk berbagai keperluan, seperti minyak goreng, margarin, dan bahan baku industri. Indonesia adalah salah satu produsen minyak kelapa sawit terbesar di dunia. Perkebunan kelapa sawit memiliki potensi yang sangat besar untuk dikembangkan lebih lanjut. Dengan teknologi yang tepat, perkebunan kelapa sawit dapat menjadi salah satu sektor yang sangat menguntungkan bagi perekonomian Indonesia.",
+        "tags": ["kelapa sawit", "indonesia", "perekonomian"],
+        "image": "https://www.riauonline.co.id/foto/bank/images2/Kebun-Sawit.jpg"
+    },
+    {
+        "title": "Perkebunan Teh",
+        "content": "Perkebunan teh adalah salah satu sektor yang sangat penting bagi perekonomian Indonesia. Teh adalah salah satu minuman yang sangat populer di Indonesia. Teh memiliki berbagai manfaat bagi kesehatan, seperti meningkatkan daya tahan tubuh dan membantu mengurangi risiko penyakit jantung. Indonesia adalah salah satu produsen teh terbesar di dunia. Perkebunan teh memiliki potensi yang sangat besar untuk dikembangkan lebih lanjut. Dengan teknologi yang tepat, perkebunan teh dapat menjadi salah satu sektor yang sangat menguntungkan bagi perekonomian Indonesia.",
+        "tags": ["teh", "indonesia", "perekonomian"],
+        "image": "https://vilamurahciwidey.com/wp-content/uploads/2023/02/Perkebunan_Teh_Rancabali.jpg"
+    },
+    {
+        "title": "Perkebunan Kopi",
+        "content": "Perkebunan kopi adalah salah satu sektor yang sangat penting bagi perekonomian Indonesia. Kopi adalah salah satu minuman yang sangat populer di Indonesia. Kopi memiliki berbagai manfaat bagi kesehatan, seperti meningkatkan konsentrasi dan membantu mengurangi risiko penyakit Parkinson. Indonesia adalah salah satu produsen kopi terbesar di dunia. Perkebunan kopi memiliki potensi yang sangat besar untuk dikembangkan lebih lanjut. Dengan teknologi yang tepat, perkebunan kopi dapat menjadi salah satu sektor yang sangat menguntungkan bagi perekonomian Indonesia.",
+        "tags": ["kopi", "indonesia", "perekonomian"],
+        "image": "https://www.pasuruankab.go.id/files/berita/c6a0638a927efe3be97df83262412e67.jpg"
+    },
+    {
+        "title": "Hama dan Penyakit Tanaman",
+        "content": "Hama dan penyakit tanaman adalah salah satu masalah yang sering dihadapi oleh petani di Indonesia. Hama dan penyakit tanaman dapat menyebabkan kerugian yang sangat besar bagi petani. Beberapa hama dan penyakit tanaman yang sering dihadapi oleh petani di Indonesia adalah hama ulat, hama wereng, penyakit busuk akar, dan penyakit layu. Untuk mengatasi masalah hama dan penyakit tanaman, petani perlu menggunakan pestisida dan fungisida yang tepat. Dengan penggunaan pestisida dan fungisida yang tepat, petani dapat mengurangi kerugian akibat hama dan penyakit tanaman.",
+        "tags": ["hama", "penyakit", "tanaman", "pestisida", "fungisida"],
+        "image": "https://thumb.viva.co.id/media/frontend/thumbs3/2022/01/07/61d7e39814617-ilustrasi-penyakit-tanaman-keropeng-apel_1265_711.jpg"
+    }
+]

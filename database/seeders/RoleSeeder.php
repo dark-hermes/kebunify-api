@@ -36,7 +36,10 @@ class RoleSeeder extends Seeder
             [
                 'name' => 'expert',
                 'permissions' => [
-                    //
+                    'create_article',
+                    'update_article',
+                    'delete_article',
+                    'view_article',
                 ]
             ]
         ];
