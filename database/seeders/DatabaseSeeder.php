@@ -19,6 +19,8 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             ExpertSpecializationSeeder::class,
             ExpertSeeder::class,
+            TagSeeder::class,
+            ArticleSeeder::class,
         ]);
     }
 }

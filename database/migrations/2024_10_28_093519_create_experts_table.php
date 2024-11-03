@@ -19,6 +19,7 @@ return new class extends Migration
             $table->bigInteger('consulting_fee')->default(0);
             $table->unsignedTinyInteger('discount')->default(0);
             $table->text('bio')->nullable();
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }

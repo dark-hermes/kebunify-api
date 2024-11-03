@@ -16,6 +16,7 @@ class Expert extends Model
         'consulting_fee',
         'discount',
         'bio',
+        'is_active',
     ];
 
     protected $appends = [

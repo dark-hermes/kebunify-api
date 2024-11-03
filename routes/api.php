@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ExpertController;
+use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\ConsultationController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\VerificationEmailController;
@@ -48,6 +49,8 @@ Route::group(['middleware' => 'auth:sanctum'], function () {name:
 
     Route::apiResource('experts', ExpertController::class);
 
+    Route::apiResource('articles', ArticleController::class)->except(['index', 'show']);
+
     Route::get('consultations', [ConsultationController::class, 'index']);
     Route::get('consultations/user/{user_id}', [ConsultationController::class, 'getByUserId']);
     Route::get('consultations/{id}', [ConsultationController::class, 'show']);
@@ -56,3 +59,5 @@ Route::group(['middleware' => 'auth:sanctum'], function () {name:
     Route::put('consultations/change-status/{id}', [ConsultationController::class, 'changeStatus']);
     Route::delete('consultations/{id}', [ConsultationController::class, 'destroy']);
 });
+
+Route::apiResource('articles', ArticleController::class)->only(['index', 'show']);
