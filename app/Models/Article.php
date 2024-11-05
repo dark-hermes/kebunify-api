@@ -45,4 +45,9 @@ class Article extends Model
     {
         return $this->belongsTo(Expert::class);
     }
+
+    public function comments()
+    {
+        return $this->hasMany(ArticleComment::class);
+    }
 }

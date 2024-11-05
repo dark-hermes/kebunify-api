@@ -24,6 +24,8 @@ class Expert extends Model
         'years_of_experience',
     ];
 
+    protected $with = ['user', 'specialization'];
+
     protected static function boot()
     {
         parent::boot();
