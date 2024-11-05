@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Spatie\Permission\Middleware\PermissionMiddleware;
@@ -169,7 +169,7 @@ class RoleController extends Controller implements HasMiddleware
 
             DB::transaction(function () use ($role) {
                 $role->permissions()->detach();
-                // $role->delete();
+                $role->delete();
             });
 
             return response()->json([
