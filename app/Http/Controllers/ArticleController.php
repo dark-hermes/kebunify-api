@@ -100,7 +100,7 @@ class ArticleController extends Controller implements HasMiddleware
     public function show(string $id)
     {
         try {
-            $article = Article::with('tags')->find($id);
+            $article = Article::with('tags', 'expert')->find($id);
 
             if (! $article) {
                 return response()->json([
