@@ -41,22 +41,6 @@ Route::group(['middleware' => 'auth:sanctum'], function () {name:
     Route::post('/experts/promote/{user_id}', [ExpertController::class, 'promote']);
     Route::apiResource('experts', ExpertController::class);
 
-    Route::name('users.')->group(function () {
-        Route::apiResource('users', UserController::class)->names([
-            'index' => 'index',
-            'store' => 'store',
-            'show' => 'show',
-            'update' => 'update',
-            'destroy' => 'destroy',
-        ]);
-        Route::post('users/{id}/upload-avatar', [UserController::class, 'storeAvatar'])->name('upload-avatar');
-        Route::delete('users/{id}/remove-avatar', [UserController::class, 'removeAvatar'])->name('remove-avatar');
-        Route::get('users/{id}/followers', [UserController::class, 'followers'])->name('followers');
-        Route::get('users/{id}/following', [UserController::class, 'following'])->name('following');
-        Route::post('users/{id}/follow', [UserController::class, 'follow'])->name('follow');
-        Route::post('users/{id}/unfollow', [UserController::class, 'unfollow'])->name('unfollow');
-    });
-
     Route::apiResource('expert-specializations', ExpertSpecializationController::class);
 
     Route::apiResource('experts', ExpertController::class);
@@ -73,3 +57,19 @@ Route::group(['middleware' => 'auth:sanctum'], function () {name:
 });
 
 Route::apiResource('articles', ArticleController::class)->only(['index', 'show']);
+
+Route::name('users.')->group(function () {
+    Route::apiResource('users', UserController::class)->names([
+        'index' => 'index',
+        'store' => 'store',
+        'show' => 'show',
+        'update' => 'update',
+        'destroy' => 'destroy',
+    ]);
+    Route::post('users/{id}/upload-avatar', [UserController::class, 'storeAvatar'])->name('upload-avatar');
+    Route::delete('users/{id}/remove-avatar', [UserController::class, 'removeAvatar'])->name('remove-avatar');
+    Route::get('users/{id}/followers', [UserController::class, 'followers'])->name('followers');
+    Route::get('users/{id}/following', [UserController::class, 'following'])->name('following');
+    Route::post('users/{id}/follow', [UserController::class, 'follow'])->name('follow');
+    Route::post('users/{id}/unfollow', [UserController::class, 'unfollow'])->name('unfollow');
+});
