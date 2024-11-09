@@ -15,10 +15,10 @@ class UserController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            // new Middleware(PermissionMiddleware::using('create_user,sanctum'), only: ['store']),
-            // new Middleware(PermissionMiddleware::using('view_user,sanctum'), only: ['index', 'show']),
-            // new Middleware(PermissionMiddleware::using('update_user,sanctum'), only: ['update, storeAvatar']),
-            // new Middleware(PermissionMiddleware::using('delete_user,sanctum'), only: ['destroy']),
+            new Middleware(PermissionMiddleware::using('create_user,sanctum'), only: ['store']),
+            new Middleware(PermissionMiddleware::using('view_user,sanctum'), only: ['index', 'show']),
+            new Middleware(PermissionMiddleware::using('update_user,sanctum'), only: ['update, storeAvatar']),
+            new Middleware(PermissionMiddleware::using('delete_user,sanctum'), only: ['destroy']),
         ];
     }
 
