@@ -18,18 +18,22 @@ class Cors
     {
         $origin = $request->headers->get('Origin');
 
-        // $allowedOrigins = explode(',', env('CORS_ALLOWED_ORIGINS', 'http://localhost:3000'));
+        $allowedOrigins = explode(',', env('CORS_ALLOWED_ORIGINS', 'http://localhost:3000'));
 
-        // if (in_array($origin, $allowedOrigins)) {
-        //     header('Access-Control-Allow-Origin: ' . $origin);
-        // }
+        if (in_array($origin, $allowedOrigins)) {
+            header('Access-Control-Allow-Origin: ' . $origin);
+        }
 
         header('Access-Control-Allow-Methods: POST, GET, OPTIONS, PUT, DELETE');
         header('Access-Control-Allow-Headers: Content-Type, X-Auth-Token, Origin, Authorization');
-        header('Access-Control-Allow-Credentials: false');
+        header('Access-Control-Allow-Credentials: true');
 
         if ($request->isMethod('OPTIONS')) {
-            return response()->json('{"method":"OPTIONS"}', 200);
+            return response('', 200)
+                ->header('Access-Control-Allow-Origin', $origin)
+                ->header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS, PUT, DELETE')
+                ->header('Access-Control-Allow-Headers', 'Content-Type, X-Auth-Token, Origin, Authorization')
+                ->header('Access-Control-Allow-Credentials', 'true');
         }
 
         return $next($request);
