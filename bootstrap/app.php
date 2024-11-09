@@ -19,9 +19,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
         ]);
 
-        $middleware->api(prepend: [
-            Cors::class
-        ]);
+        // $middleware->api(prepend: [
+        //     Cors::class
+        // ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
