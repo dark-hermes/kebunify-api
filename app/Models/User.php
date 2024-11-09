@@ -26,7 +26,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'password',
         'avatar',
-        'phone'
+        'phone',
+        'is_active',
     ];
 
     /**
@@ -51,6 +52,12 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
         ];
     }
+
+    protected $appends = [
+        'is_admin',
+        'is_expert',
+        'avatar_url'
+    ];
 
     protected $guard_name = 'sanctum';
 
@@ -85,6 +92,16 @@ class User extends Authenticatable implements MustVerifyEmail
         } else {
             return asset('images/placeholders/user.webp');
         }
+    }
+
+    public function getIsAdminAttribute(): bool
+    {
+        return $this->hasRole('admin');
+    }
+
+    public function getIsExpertAttribute(): bool
+    {
+        return $this->hasRole('expert');
     }
 
     public function followers()
