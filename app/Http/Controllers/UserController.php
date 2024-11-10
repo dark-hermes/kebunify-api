@@ -28,7 +28,7 @@ class UserController extends Controller implements HasMiddleware
     public function index(Request $request)
     {
         $search = $request->query('search');
-        $paginate = $request->query('paginate') ?? 10;
+        $limit = $request->query('limit') ?? 10;
 
         try {
             $users = User::query()
@@ -38,9 +38,7 @@ class UserController extends Controller implements HasMiddleware
                 })
                 ->with('roles');
 
-            $users = ! $paginate
-                ? $users->get()
-                : $users->paginate($paginate);
+            $users = $users->paginate($limit);
 
             return response()->json([
                 'message' => __('http-statuses.200'),
