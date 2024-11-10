@@ -94,6 +94,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::apiResource('expert-specializations', ExpertSpecializationController::class);
 
     Route::apiResource('articles', ArticleController::class)->except(['index', 'show']);
+    Route::post('articles/{id}/upload-image', [ArticleController::class, 'uploadImage']);
 
     Route::get('chats/{consultation_id}', [ChatController::class, 'index']);
     Route::post('chats/{consultation_id}', [ChatController::class, 'store']);
