@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 use App\Models\User;
+use Spatie\Permission\Models\Role;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -16,9 +17,10 @@ class AuthTest extends TestCase
      */
     public function test_login_with_email_password_and_device_name(): void
     {
+        $role = Role::create(['name' => 'user', 'guard_name' => 'sanctum']);
         $user = User::factory()->create([
             'password' => bcrypt($password = '123qweasd'),
-        ]);
+        ])->assignRole($role);
 
         $response = $this->postJson('/api/login', [
             'email' => $user->email,
@@ -46,9 +48,10 @@ class AuthTest extends TestCase
 
     public function test_login_with_email_password_and_device_name_and_wrong_password(): void
     {
+        $role = Role::create(['name' => 'user', 'guard_name' => 'sanctum']);
         $user = User::factory()->create([
             'password' => bcrypt($password = '123qweasd'),
-        ]);
+        ])->assignRole($role);
 
         $response = $this->postJson('/api/login', [
             'email' => $user->email,

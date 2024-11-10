@@ -12,21 +12,58 @@ class ExpertController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Expert::with('user');
+        $search = $request->query('search');
+        $paginate = $request->query('paginate') ?? 10;
 
-        if ($request->has('user_id')) {
-            $query->where('user_id', $request->input('user_id'));}
+        try {
+            $experts = Expert::query()
+                ->when($search, function ($query, $search) {
+                    return $query->whereRelation('user', 'name', 'like', '%' . $search . '%')
+                        ->orWhereRelation('specialization', 'name', 'like', '%' . $search . '%');
+                })->with('user', 'specialization');
 
-        if($request -> has('search')) {
-            $searh = $request->input('search');
-            $query->where('specialization','LIKE',"%{$searh}%");
+            $experts = ! $paginate
+                ? $experts->get()
+                : $experts->paginate($paginate);
+
+            return response()->json([
+                'message' => __('http-statuses.200'),
+                'data' => $experts,
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('http-statuses.500'),
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
         }
-        return response()->json($query->get(),200);
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Display the specified resource.
      */
+    public function show(String $id)
+    {
+        try {
+            $expert = Expert::with('user', 'specialization')->find($id);
+
+            if (!$expert) {
+                return response()->json([
+                    'message' => __('http-statuses.404'),
+                ], 404);
+            }
+
+            return response()->json([
+                'message' => __('http-statuses.200'),
+                'data' => $expert,
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('http-statuses.404'),
+            ], 404);
+        }
+    }
+    
+    
     public function leaderboard(Request $request)
     {
         $period = $request->input('period');
@@ -68,23 +105,6 @@ class ExpertController extends Controller
         ]);
 
         return response()->json(['message' => 'User promoted to expert successfully'], 200);
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show($id)
-    {
-        $expert = Expert::findOrFail($id);
-        return response()->json($expert, 200);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
     }
 
     /**

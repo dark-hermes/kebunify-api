@@ -18,6 +18,8 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             UserSeeder::class,
             ExpertSeeder::class,
+            TagSeeder::class,
+            ArticleSeeder::class,
         ]);
     }
 }

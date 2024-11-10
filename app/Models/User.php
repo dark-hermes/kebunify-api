@@ -6,6 +6,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -13,7 +14,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles, HasApiTokens;
+    use HasFactory, Notifiable, HasRoles, HasApiTokens, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -27,6 +28,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'avatar',
         'phone',
         'address',
+        'is_active',
     ];
 
     /**
@@ -51,6 +53,12 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
         ];
     }
+
+    protected $appends = [
+        'is_admin',
+        'is_expert',
+        'avatar_url'
+    ];
 
     protected $guard_name = 'sanctum';
 
@@ -113,5 +121,23 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     
-    
+    public function getIsAdminAttribute(): bool
+    {
+        return $this->hasRole('admin');
+    }
+
+    public function getIsExpertAttribute(): bool
+    {
+        return $this->hasRole('expert');
+    }
+
+    public function followers()
+    {
+        return $this->belongsToMany(User::class, 'followers', 'followed_id', 'follower_id');
+    }
+
+    public function following()
+    {
+        return $this->belongsToMany(User::class, 'followers', 'follower_id', 'followed_id');
+    }
 }

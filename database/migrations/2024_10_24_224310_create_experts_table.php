@@ -13,9 +13,14 @@ return new class extends Migration
     {
         Schema::create('experts', function (Blueprint $table) {
             $table->id();
-            $table->string('specialization');
-            $table->integer('consultation_price');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('expert_specialization_id')->nullable()->constrained()->cascadeOnUpdate()->nullOnDelete();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
+            $table->unsignedMediumInteger('start_year')->default(now()->year);
+            $table->bigInteger('consulting_fee')->default(0);
+            $table->unsignedTinyInteger('discount')->default(0);
+            $table->text('bio')->nullable();
+            $table->boolean('is_active')->default(true);
+            $table->softDeletes();
             $table->timestamps();
         });
     }

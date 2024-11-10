@@ -7,6 +7,7 @@ use App\Http\Controllers\ChatController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ExpertController;
+use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\ConsultationController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\VerificationEmailController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\SellerController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\ExpertSpecializationController;
 
 Route::group(['middleware' => 'guest'], function () {
     Route::post('/login',  [AuthController::class, 'login'])->name('login')->middleware('throttle:6,1');
@@ -24,7 +26,6 @@ Route::group(['middleware' => 'guest'], function () {
     Route::post('/email/password', [PasswordResetController::class, 'setResetLinkEmail']);
     Route::post('/email/password-reset', [PasswordResetController::class, 'reset'])->middleware('signed')->name('password.reset');
 });
-
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
@@ -35,23 +36,37 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     Route::apiResource('roles', RoleController::class);
 
+    Route::name('users.')->group(function () {
+        Route::apiResource('users', UserController::class)->names([
+            'index' => 'index',
+            'store' => 'store',
+            'show' => 'show',
+            'update' => 'update',
+            'destroy' => 'destroy',
+        ]);
+        Route::post('users/{id}/upload-avatar', [UserController::class, 'storeAvatar'])->name('upload-avatar');
+        Route::delete('users/{id}/remove-avatar', [UserController::class, 'removeAvatar'])->name('remove-avatar');
+        Route::get('users/{id}/followers', [UserController::class, 'followers'])->name('followers');
+        Route::get('users/{id}/following', [UserController::class, 'following'])->name('following');
+        Route::post('users/{id}/follow', [UserController::class, 'follow'])->name('follow');
+        Route::post('users/{id}/unfollow', [UserController::class, 'unfollow'])->name('unfollow');
+    });
+
+    Route::get('/consultations', [ConsultationController::class, 'index']);
+    Route::get('/consultations/user/{user_id}', [ConsultationController::class, 'getByUserId']);
+    Route::get('/consultations/{id}', [ConsultationController::class, 'show']);
+    Route::post('/consultations', [ConsultationController::class, 'store']);
+    Route::put('/consultations/{id}', [ConsultationController::class, 'update']);
+    Route::put('/consultations/change-status/{id}', [ConsultationController::class, 'changeStatus']);
+    Route::delete('/consultations/{id}', [ConsultationController::class, 'destroy']);
+
     Route::get('/experts/leaderboard', [ExpertController::class, 'leaderboard']);
     Route::post('/experts/promote/{user_id}', [ExpertController::class, 'promote']);
     Route::apiResource('experts', ExpertController::class);
 
-    Route::apiResource('users', UserController::class);
-    Route::post('users/{id}/upload-avatar', [UserController::class, 'storeAvatar']);
-    Route::delete('users/{id}/remove-avatar', [UserController::class, 'removeAvatar']);
+    Route::apiResource('expert-specializations', ExpertSpecializationController::class);
 
-    Route::apiResource('experts', ExpertController::class);
-
-    Route::get('consultations', [ConsultationController::class, 'index']);
-    Route::get('consultations/user/{user_id}', [ConsultationController::class, 'getByUserId']);
-    Route::get('consultations/{id}', [ConsultationController::class, 'show']);
-    Route::post('consultations', [ConsultationController::class, 'store']);
-    Route::put('consultations/{id}', [ConsultationController::class, 'update']);
-    Route::put('consultations/change-status/{id}', [ConsultationController::class, 'changeStatus']);
-    Route::delete('consultations/{id}', [ConsultationController::class, 'destroy']);
+    Route::apiResource('articles', ArticleController::class)->except(['index', 'show']);
 
     Route::get('chats/{consultation_id}', [ChatController::class, 'index']);
     Route::post('chats/{consultation_id}', [ChatController::class, 'store']);
@@ -91,18 +106,10 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::put('/transactions/{transaction}/status', [TransactionController::class, 'updateStatus']);
     Route::put('/transactions/{transaction}/payment-status', [TransactionController::class, 'updatePaymentStatus']);
 
-    //ini sebenernya route buat admin tapi gk tau logis apa engga
-    // Route::delete('/orders/{id}', [TransactionController::class, 'destroy']);
-    // Route::get('/orders/user/{user_id}', [TransactionController::class, 'getByUserId']);
-    // Route::get('/orders/seller/{seller_id}', [TransactionController::class, 'getBySellerId']);
-    // Route::get('/orders/status/{status}', [TransactionController::class, 'getByStatus']);
-    // Route::get('/orders/{id}/items', [TransactionController::class, 'getItems']);
-    // Route::post('/orders/{id}/items', [TransactionController::class, 'addItem']);
-    // Route::put('/orders/items/{item_id}', [TransactionController::class, 'updateItem']);
-    // Route::delete('/orders/items/{item_id}', [TransactionController::class, 'removeItems']);
-    
     Route::post('/apply-role', [DocumentController::class, 'applyForRole']);
     Route::get('/documents', [DocumentController::class, 'index']);
     Route::put('/documents/{id}/approve', [DocumentController::class, 'approveApplication']);
     Route::put('/documents/{id}/reject', [DocumentController::class, 'rejectApplication']);
 });
+
+Route::apiResource('articles', ArticleController::class)->only(['index', 'show']);
