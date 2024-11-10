@@ -392,7 +392,7 @@ class UserController extends Controller implements HasMiddleware
     public function export()
     {
         try {
-            return Excel::download(new UserExport, 'kebunify-users.xlsx');
+            return Excel::download(new UserExport, 'users.xlsx');
         } catch (\Throwable $th) {
             return response()->json([
                 'message' => __('http-statuses.500'),
