@@ -75,6 +75,8 @@ class UserController extends Controller implements HasMiddleware
                     'name' => $request->name,
                     'email' => $request->email,
                     'password' => bcrypt($request->password),
+                    'phone' => $request->phone,
+                    'avatar' => $request->avatar ?? null,
                 ]);
 
                 if ($request->has('roles')) {
