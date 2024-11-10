@@ -370,7 +370,7 @@ class UserController extends Controller implements HasMiddleware
             }
 
             $user->update([
-                'status' => !$user->status,
+                'is_active' => ! $user->is_active,
             ]);
 
             return response()->json([
