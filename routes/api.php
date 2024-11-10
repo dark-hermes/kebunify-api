@@ -45,6 +45,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
             'update' => 'update',
             'destroy' => 'destroy',
         ]);
+        Route::put('users/{id}/switch-status', [UserController::class, 'switchStatus'])->name('switch-status');
         Route::post('users/{id}/upload-avatar', [UserController::class, 'storeAvatar'])->name('upload-avatar');
         Route::delete('users/{id}/remove-avatar', [UserController::class, 'removeAvatar'])->name('remove-avatar');
         Route::get('users/{id}/followers', [UserController::class, 'followers'])->name('followers');
