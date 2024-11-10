@@ -15,11 +15,12 @@ class ExpertSeeder extends Seeder
      */
     public function run(): void
     {
-        $experts = User::role('expert')->get();
+        $experts = User::where('email', 'like', 'expert%')->get();
 
         foreach ($experts as $expert) {
             Expert::factory()->create([
                 'user_id' => $expert->id,
+                'expert_specialization_id' => ExpertSpecialization::inRandomOrder()->first()->id,
             ]);
         }
     }

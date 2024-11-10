@@ -32,21 +32,11 @@ class Expert extends Model
         parent::boot();
 
         static::created(function ($model) {
-            $model->user->syncRoles('expert');
-        });
-
-        static::updated(function ($model) {
-            $oldUser = $model->getOriginal('user_id');
-            $newUser = $model->user_id;
-
-            if ($oldUser !== $newUser) {
-                User::find($oldUser)->syncRoles('user');
-                User::find($newUser)->syncRoles('expert');
-            }
+            $model->user->assignRole('expert');
         });
 
         static::deleted(function ($model) {
-            $model->user->syncRoles('user');
+            $model->user->removeRole('expert');
         });
     }
 
