@@ -25,7 +25,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'password',
         'avatar',
-        'phone'
+        'phone',
+        'address',
     ];
 
     /**
@@ -85,4 +86,32 @@ class User extends Authenticatable implements MustVerifyEmail
             return asset('images/placeholders/user.webp');
         }
     }
+
+    public function seller()
+    {
+        return $this->hasOne(Seller::class);
+    }
+
+    public function consultations()
+    {
+        return $this->hasMany(Consultation::class);
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class);
+    }
+
+    public function applications()
+    {
+        return $this->hasMany(Application::class);
+    }
+
+    
+    
 }
