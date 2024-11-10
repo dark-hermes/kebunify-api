@@ -11,7 +11,8 @@ class ExpertExperience extends Model
         'position',
         'company',
         'start_year',
-        'end_year'
+        'end_year',
+        'description'
     ];
 
     public function expert()
