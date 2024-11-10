@@ -34,6 +34,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('email/verification-notification', [VerificationEmailController::class, 'send'])->middleware('throttle:6,1')->name('verification.send');
     Route::get('email/verify', [VerificationEmailController::class, 'verify'])->name('verification.verify');
 
+    Route::get('roles/list', [RoleController::class, 'list']);
     Route::apiResource('roles', RoleController::class);
 
     Route::name('users.')->group(function () {
