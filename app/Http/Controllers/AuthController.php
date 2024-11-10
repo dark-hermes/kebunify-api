@@ -49,23 +49,30 @@ class AuthController extends Controller
 
     public function register(Request $request){
 
-        $data = Validator::make($request->all(), [
-
-            'name' => 'required',
-            'email' => ['required', 'email'],
-            'password' => 'required'
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users',
+            'password' => 'required|string|min:8',
+            'password_confirmation' => 'required|same:password',
         ]);
 
-        if($data->fails()){
-            return response()->json('Formmu belum sesuai', 406);
-        }
-        else{
-            User::create([
+        try {
+            $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
-                'password' => Hash::make($request->password)
+                'password' => Hash::make($request->password),
             ]);
-            return response()->json('Akun anda telah dibuat',200);
+
+            $token = $user->createToken($request->device_name)->plainTextToken;
+            return response()->json([
+                'message' => __('auth.register.success'),
+                'token' => $token
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('http-statuses.500'),
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
         }
     }
 }
