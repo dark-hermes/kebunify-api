@@ -115,7 +115,7 @@ class AuthController extends Controller
 
         if (! Hash::check($request->current_password, $user->password)) {
             throw ValidationException::withMessages([
-                'current_password' => [__('auth.password.failed')],
+                'current_password' => [__('auth.password')],
             ]);
         }
 
@@ -126,6 +126,54 @@ class AuthController extends Controller
 
             return response()->json([
                 'message' => __('http-statuses.200'),
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('http-statuses.500'),
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    public function changeAvatar(Request $request)
+    {
+        $request->validate([
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ]);
+
+        try {
+            $user = $request->user();
+            $avatar = $request->file('avatar');
+            $avatarName = $user->id . '_avatar' . time() . '.' . $avatar->getClientOriginalExtension();
+            $avatar->storeAs('avatars', $avatarName);
+
+            $user->update([
+                'avatar' => $avatarName,
+            ]);
+
+            return response()->json([
+                'message' => __('http-statuses.200'),
+                'data' => $user->refresh()
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('http-statuses.500'),
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    public function deleteAvatar(Request $request)
+    {
+        try {
+            $user = $request->user();
+            $user->update([
+                'avatar' => null,
+            ]);
+
+            return response()->json([
+                'message' => __('http-statuses.200'),
+                'data' => $user->refresh()
             ]);
         } catch (\Throwable $th) {
             return response()->json([
