@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\ExpertEducation;
+use Illuminate\Support\Facades\Auth;
 
 class ExpertEducationController extends Controller
 {
@@ -13,10 +14,10 @@ class ExpertEducationController extends Controller
     public function index(string $expertId)
     {
         try {
-            $expert = ExpertEducation::where('expert_id', $expertId)->get();
+            $education = ExpertEducation::where('expert_id', $expertId)->get();
             return response()->json([
                 'message' => __('http-statuses.200'),
-                'data' => $expert,
+                'data' => $education,
             ]);
 
         } catch (\Throwable $th) {
@@ -40,7 +41,7 @@ class ExpertEducationController extends Controller
         ]);
 
         try {
-            $expert = ExpertEducation::create([
+            $education = ExpertEducation::create([
                 'expert_id' => $expertId,
                 'degree' => $request->degree,
                 'institution' => $request->institution,
@@ -50,7 +51,44 @@ class ExpertEducationController extends Controller
 
             return response()->json([
                 'message' => __('http-statuses.201'),
-                'data' => $expert,
+                'data' => $education,
+            ], 201);
+
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('http-statuses.500'),
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    public function storeAuth(Request $request)
+    {
+        $request->validate([
+            'degree' => 'required|string',
+            'institution' => 'required|string',
+            'graduation_year' => 'required|date_format:Y',
+            'field_of_study' => 'required|string',
+        ]);
+
+        if (! Auth::user()->is_expert) {
+            return response()->json([
+                'message' => __('http-statuses.403'),
+            ], 403);
+        }
+
+        try {
+            $education = ExpertEducation::create([
+                'expert_id' => Auth::id(),
+                'degree' => $request->degree,
+                'institution' => $request->institution,
+                'graduation_year' => $request->graduation_year,
+                'field_of_study' => $request->field_of_study,
+            ]);
+
+            return response()->json([
+                'message' => __('http-statuses.201'),
+                'data' => $education,
             ], 201);
 
         } catch (\Throwable $th) {
@@ -67,9 +105,9 @@ class ExpertEducationController extends Controller
     public function show(string $expertId, string $id)
     {
         try {
-            $expert = ExpertEducation::find($id);
+            $education = ExpertEducation::find($id);
 
-            if (!$expert) {
+            if (!$education) {
                 return response()->json([
                     'message' => __('http-statuses.404'),
                 ], 404);
@@ -77,7 +115,7 @@ class ExpertEducationController extends Controller
 
             return response()->json([
                 'message' => __('http-statuses.200'),
-                'data' => $expert,
+                'data' => $education,
             ]);
 
         } catch (\Throwable $th) {
@@ -100,15 +138,16 @@ class ExpertEducationController extends Controller
         ]);
 
         try {
-            $expert = ExpertEducation::find($id);
 
-            if (!$expert) {
+            $education = ExpertEducation::find($id);
+
+            if (!$education) {
                 return response()->json([
                     'message' => __('http-statuses.404'),
                 ], 404);
             }
 
-            $expert->update([
+            $education->update([
                 'degree' => $request->degree,
                 'institution' => $request->institution,
                 'graduation_year' => $request->graduation_year,
@@ -117,7 +156,52 @@ class ExpertEducationController extends Controller
 
             return response()->json([
                 'message' => __('http-statuses.200'),
-                'data' => $expert->refresh(),
+                'data' => $education->refresh(),
+            ]);
+
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('http-statuses.500'),
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    public function updateAuth(Request $request, string $id)
+    {
+        $request->validate([
+            'degree' => 'required|string',
+            'institution' => 'required|string',
+            'graduation_year' => 'required|date_format:Y',
+            'field_of_study' => 'required|string',
+        ]);
+
+        try {
+            $education = ExpertEducation::find($id);
+
+            if (!$education) {
+                return response()->json([
+                    'message' => __('http-statuses.404'),
+                ], 404);
+            }
+
+            if (Auth::user()->id !== $education->expert_id) {
+                return response()->json([
+                    'message' => __('http-statuses.403'),
+                ], 403);
+            }
+
+
+            $education->update([
+                'degree' => $request->degree,
+                'institution' => $request->institution,
+                'graduation_year' => $request->graduation_year,
+                'field_of_study' => $request->field_of_study,
+            ]);
+
+            return response()->json([
+                'message' => __('http-statuses.200'),
+                'data' => $education->refresh(),
             ]);
 
         } catch (\Throwable $th) {
@@ -134,15 +218,40 @@ class ExpertEducationController extends Controller
     public function destroy(string $expertId, string $id)
     {
         try {
-            $expert = ExpertEducation::find($id);
+            $education = ExpertEducation::find($id);
 
-            if (!$expert) {
+            if (!$education) {
                 return response()->json([
                     'message' => __('http-statuses.404'),
                 ], 404);
             }
 
-            $expert->delete();
+            $education->delete();
+
+            return response()->json([
+                'message' => __('http-statuses.200'),
+            ]);
+
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('http-statuses.500'),
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    public function destroyAuth(string $id)
+    {
+        try {
+            $education = ExpertEducation::where('expert_id', Auth::id())->find($id);
+
+            if (!$education) {
+                return response()->json([
+                    'message' => __('http-statuses.404'),
+                ], 404);
+            }
+
+            $education->delete();
 
             return response()->json([
                 'message' => __('http-statuses.200'),

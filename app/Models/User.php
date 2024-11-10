@@ -140,4 +140,9 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->belongsToMany(User::class, 'followers', 'follower_id', 'followed_id');
     }
+
+    public function expert()
+    {
+        return $this->hasOne(Expert::class);
+    }
 }

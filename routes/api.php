@@ -17,6 +17,7 @@ use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\ConsultationController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\ExpertEducationController;
+use App\Http\Controllers\ExpertExperienceController;
 use App\Http\Controllers\VerificationEmailController;
 use App\Http\Controllers\ExpertSpecializationController;
 
@@ -68,11 +69,25 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('/experts/leaderboard', [ExpertController::class, 'leaderboard']);
     Route::post('/experts/promote/{user_id}', [ExpertController::class, 'promote']);
     Route::apiResource('experts', ExpertController::class);
+
     Route::get('experts/{expertId}/educations', [ExpertEducationController::class, 'index']);
     Route::post('experts/{expertId}/educations', [ExpertEducationController::class, 'store']);
+    Route::post('experts/educations/auth', [ExpertEducationController::class, 'storeAuth']);
     Route::get('experts/{expertId}/educations/{id}', [ExpertEducationController::class, 'show']);
     Route::put('experts/{expertId}/educations/{id}', [ExpertEducationController::class, 'update']);
+    Route::put('experts/educations/auth/{id}', [ExpertEducationController::class, 'updateAuth']);
     Route::delete('experts/{expertId}/educations/{id}', [ExpertEducationController::class, 'destroy']);
+    Route::delete('experts/educations/auth/{id}', [ExpertEducationController::class, 'destroyAuth']);
+
+    Route::get('experts/{expertId}/experiences', [ExpertExperienceController::class, 'index']);
+    Route::post('experts/{expertId}/experiences', [ExpertExperienceController::class, 'store']);
+    Route::post('experts/experiences/auth', [ExpertExperienceController::class, 'storeAuth']);
+    Route::get('experts/{expertId}/experiences/{id}', [ExpertExperienceController::class, 'show']);
+    Route::put('experts/{expertId}/experiences/{id}', [ExpertExperienceController::class, 'update']);
+    Route::put('experts/experiences/auth/{id}', [ExpertExperienceController::class, 'updateAuth']);
+    Route::delete('experts/{expertId}/experiences/{id}', [ExpertExperienceController::class, 'destroy']);
+    Route::delete('experts/experiences/auth/{id}', [ExpertExperienceController::class, 'destroyAuth']);
+
 
     Route::apiResource('expert-specializations', ExpertSpecializationController::class);
 
