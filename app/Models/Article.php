@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Article extends Model
 {
@@ -20,6 +21,7 @@ class Article extends Model
 
     protected $appends = [
         'readable_created_at',
+        'image_url'
     ];
 
     protected static function boot()
@@ -35,6 +37,20 @@ class Article extends Model
     {
         return $this->created_at->diffForHumans();
     }
+
+    public function getImageUrlAttribute(): ?string
+    {
+        if ($this->image) {
+            if (str_starts_with($this->image, 'http')) {
+                return $this->image;
+            } else {
+                return asset($this->image);
+            }
+        } else {
+            return asset('images/placeholders/image.webp');
+        }
+    }
+
 
     public function tags()
     {

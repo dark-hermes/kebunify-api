@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Article;
+use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -75,11 +76,24 @@ class ArticleController extends Controller implements HasMiddleware
                     'expert_id' => Auth::user()->expert->id,
                     'title' => $request->title,
                     'content' => $request->content,
-                    'image' => $request->image ? $request->image->store('articles') : null,
                     'is_published' => $request->is_published,
                     'is_premium' => $request->is_premium,
                 ]);
-                $article->tags()->attach($request->tags);
+
+                if ($request->hasFile('image')) {
+                    $image = $request->file('image');
+                    $imageName = $article->id . '_image' . time() . '.' . $image->getClientOriginalExtension();
+                    $image->storeAs('articles', $imageName, 'public');
+
+                    $article->update([
+                        'image' => 'storage/articles/' . $imageName,
+                    ]);
+                }
+
+                foreach ($request->tags as $tag) {
+                    $tag = Tag::firstOrCreate(['name' => $tag]);
+                    $article->tags()->attach($tag->id);
+                }
             });
 
             return response()->json([
@@ -127,7 +141,6 @@ class ArticleController extends Controller implements HasMiddleware
         $request->validate([
             'title' => 'required|string',
             'content' => 'required|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'is_published' => 'required|boolean',
             'is_premium' => 'required|boolean',
             'tags' => 'required|array',
@@ -146,12 +159,52 @@ class ArticleController extends Controller implements HasMiddleware
                 $article->update([
                     'title' => $request->title,
                     'content' => $request->content,
-                    'image' => $request->image ? $request->image->store('articles') : $article->image,
                     'is_published' => $request->is_published,
                     'is_premium' => $request->is_premium,
                 ]);
-                $article->tags()->sync($request->tags);
+
+                foreach ($request->tags as $tag) {
+                    $tag = Tag::firstOrCreate(['name' => $tag]);
+                    $tags[] = $tag->id;
+                }
+
+                $article->tags()->sync($tags);
             });
+
+            return response()->json([
+                'message' => __('http-statuses.200'),
+                'data' => $article->refresh(),
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('http-statuses.500'),
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    public function uploadImage(Request $request, string $id)
+    {
+        $request->validate([
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ]);
+
+        try {
+            $article = Article::find($id);
+
+            if (! $article) {
+                return response()->json([
+                    'message' => __('http-statuses.404'),
+                ], 404);
+            }
+
+            $image = $request->file('image');
+            $imageName = $article->id . '_image' . time() . '.' . $image->getClientOriginalExtension();
+            $image->storeAs('articles', $imageName, 'public');
+
+            $article->update([
+                'image' => 'storage/articles/' . $imageName,
+            ]);
 
             return response()->json([
                 'message' => __('http-statuses.200'),
