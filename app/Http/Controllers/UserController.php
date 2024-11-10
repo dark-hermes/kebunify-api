@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Exports\UserExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Spatie\Permission\Middleware\PermissionMiddleware;
@@ -67,7 +69,7 @@ class UserController extends Controller implements HasMiddleware
             'avatar' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048|nullable',
         ]);
 
-        try  {
+        try {
             $user = null;
 
             DB::transaction(function () use ($request, &$user) {
@@ -379,6 +381,18 @@ class UserController extends Controller implements HasMiddleware
                 'message' => __('http-statuses.200'),
                 'data' => $user,
             ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('http-statuses.500'),
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    public function export()
+    {
+        try {
+            return Excel::download(new UserExport, 'kebunify-users.xlsx');
         } catch (\Throwable $th) {
             return response()->json([
                 'message' => __('http-statuses.500'),
