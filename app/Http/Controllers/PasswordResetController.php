@@ -27,7 +27,8 @@ class PasswordResetController extends Controller
         ]);
     }
 
-    public function reset(Request $request){
+    public function reset(Request $request)
+    {
         $request->validate([
             'password' => 'required'
         ]);

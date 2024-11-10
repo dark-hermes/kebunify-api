@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Expert;
+use App\Models\Document;
 use Illuminate\Http\Request;
 
 class ExpertController extends Controller
@@ -62,8 +63,8 @@ class ExpertController extends Controller
             ], 404);
         }
     }
-    
-    
+
+
     public function leaderboard(Request $request)
     {
         $period = $request->input('period');

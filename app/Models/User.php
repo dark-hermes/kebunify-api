@@ -115,12 +115,13 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Transaction::class);
     }
 
-    public function applications()
-    {
-        return $this->hasMany(Application::class);
-    }
+    // Commented out because the Application model is not exist
+    // public function applications()
+    // {
+    //     return $this->hasMany(Application::class);
+    // }
 
-    
+
     public function getIsAdminAttribute(): bool
     {
         return $this->hasRole('admin');
