@@ -32,6 +32,8 @@ Route::group(['middleware' => 'guest'], function () {
 Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('me',     [AuthController::class, 'me'])->name('me');
+    Route::put('me',     [AuthController::class, 'update'])->name('update');
+    Route::put('me/password', [AuthController::class, 'changePassword'])->name('change-password');
 
     Route::post('email/verification-notification', [VerificationEmailController::class, 'send'])->middleware('throttle:6,1')->name('verification.send');
     Route::get('email/verify', [VerificationEmailController::class, 'verify'])->name('verification.verify');
