@@ -44,8 +44,9 @@ class AuthController extends Controller
 
     public function me(Request $request)
     {
-        return response()->json($request->user());
+        return response()->json($request->user()->load('roles'));
     }
+<<<<<<< HEAD
 
     public function register(Request $request){
     
@@ -68,4 +69,6 @@ class AuthController extends Controller
             return response()->json('Akun anda telah dibuat',200);
         }
     }
+=======
+>>>>>>> f1c1db2ce0245910a7e28a1c02f5d82cb4a3f977
 }
