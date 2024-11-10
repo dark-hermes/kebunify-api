@@ -357,4 +357,31 @@ class UserController extends Controller implements HasMiddleware
             ], 500);
         }
     }
+
+    public function switchStatus(string $id)
+    {
+        try {
+            $user = User::find($id);
+
+            if (!$user) {
+                return response()->json([
+                    'message' => __('http-statuses.404'),
+                ], 404);
+            }
+
+            $user->update([
+                'status' => !$user->status,
+            ]);
+
+            return response()->json([
+                'message' => __('http-statuses.200'),
+                'data' => $user,
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('http-statuses.500'),
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
+        }
+    }
 }
