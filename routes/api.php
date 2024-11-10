@@ -38,6 +38,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::apiResource('roles', RoleController::class);
 
     Route::name('users.')->group(function () {
+        Route::get('users/export', [UserController::class, 'export'])->name('export');
         Route::apiResource('users', UserController::class)->names([
             'index' => 'index',
             'store' => 'store',
@@ -46,6 +47,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
             'destroy' => 'destroy',
         ]);
         Route::put('users/{id}/switch-status', [UserController::class, 'switchStatus'])->name('switch-status');
+
         Route::post('users/{id}/upload-avatar', [UserController::class, 'storeAvatar'])->name('upload-avatar');
         Route::delete('users/{id}/remove-avatar', [UserController::class, 'removeAvatar'])->name('remove-avatar');
         Route::get('users/{id}/followers', [UserController::class, 'followers'])->name('followers');
