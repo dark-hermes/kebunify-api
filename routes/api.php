@@ -10,6 +10,12 @@ use App\Http\Controllers\ExpertController;
 use App\Http\Controllers\ConsultationController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\VerificationEmailController;
+use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\SellerController;
+use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\DocumentController;
 
 Route::group(['middleware' => 'guest'], function () {
     Route::post('/login',  [AuthController::class, 'login'])->name('login')->middleware('throttle:6,1');
@@ -54,4 +60,49 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::delete('chats/{id}', [ChatController::class, 'destroy']);
     Route::get('chats/unread-count/{consultation_id}', [ChatController::class, 'unreadCount']);
     Route::put('chats/mark-as-read/{consultation_id}', [ChatController::class, 'markAsRead']);
+
+    Route::get('reviews/{product_id}', [ReviewController::class, 'index']);
+    Route::post('reviews/{product_id}', [ReviewController::class, 'store']);
+    Route::put('reviews/{id}', [ReviewController::class, 'update']);
+    Route::delete('reviews/{id}', [ReviewController::class, 'destroy']);
+
+    Route::get('/products', [ProductController::class, 'index']);
+    Route::get('/products/{id}', [ProductController::class, 'show']);
+    Route::get('/products/random', [ProductController::class, 'random']);
+    Route::post('/products', [ProductController::class, 'store']);
+    Route::put('/products/{id}', [ProductController::class, 'update']);
+    Route::delete('/products/{id}', [ProductController::class, 'destroy']);
+    Route::get('/categories/{category_id}/products', [ProductController::class, 'getByCategory']);
+    Route::get('/products/search', [ProductController::class, 'search']);
+    Route::get('/products/{id}/related', [ProductController::class, 'getRelated']);
+    Route::get('/products/{id}/reviews', [ProductController::class, 'getReviews']);
+
+    Route::apiResource('categories', CategoryController::class);
+
+    Route::get('/sellers', [SellerController::class, 'index']);
+    Route::post('/sellers/promote/{user_id}', [SellerController::class, 'promote']);
+    Route::get('/sellers/{id}', [SellerController::class, 'show']);
+    Route::put('/sellers/{id}', [SellerController::class, 'update']);
+    Route::delete('/sellers/{id}', [SellerController::class, 'destroy']);
+
+    Route::get('/transactions', [TransactionController::class, 'index']);
+    Route::post('/transactions', [TransactionController::class, 'store']);
+    Route::get('/transactions/{id}', [TransactionController::class, 'show']);
+    Route::put('/transactions/{transaction}/status', [TransactionController::class, 'updateStatus']);
+    Route::put('/transactions/{transaction}/payment-status', [TransactionController::class, 'updatePaymentStatus']);
+
+    //ini sebenernya route buat admin tapi gk tau logis apa engga
+    // Route::delete('/orders/{id}', [TransactionController::class, 'destroy']);
+    // Route::get('/orders/user/{user_id}', [TransactionController::class, 'getByUserId']);
+    // Route::get('/orders/seller/{seller_id}', [TransactionController::class, 'getBySellerId']);
+    // Route::get('/orders/status/{status}', [TransactionController::class, 'getByStatus']);
+    // Route::get('/orders/{id}/items', [TransactionController::class, 'getItems']);
+    // Route::post('/orders/{id}/items', [TransactionController::class, 'addItem']);
+    // Route::put('/orders/items/{item_id}', [TransactionController::class, 'updateItem']);
+    // Route::delete('/orders/items/{item_id}', [TransactionController::class, 'removeItems']);
+    
+    Route::post('/apply-role', [DocumentController::class, 'applyForRole']);
+    Route::get('/documents', [DocumentController::class, 'index']);
+    Route::put('/documents/{id}/approve', [DocumentController::class, 'approveApplication']);
+    Route::put('/documents/{id}/reject', [DocumentController::class, 'rejectApplication']);
 });

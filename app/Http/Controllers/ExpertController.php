@@ -56,6 +56,11 @@ class ExpertController extends Controller
      */
     public function promote(Request $request, $user_id)
     {
+        $approvedDocuments = Document::where('user_id', $user_id)
+            ->where('status', 'APPORVED')
+            ->where('role_applied', 'expert')
+            ->exists();
+
         $expert = Expert::create([
             'specialization' => $request->specialization,
             'consultation_price' => $request->consultation_price,
