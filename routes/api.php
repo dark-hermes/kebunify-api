@@ -7,16 +7,17 @@ use App\Http\Controllers\ChatController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ExpertController;
-use App\Http\Controllers\ArticleController;
-use App\Http\Controllers\ConsultationController;
-use App\Http\Controllers\PasswordResetController;
-use App\Http\Controllers\VerificationEmailController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\SellerController;
+use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\SellerController;
-use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\ConsultationController;
+use App\Http\Controllers\PasswordResetController;
+use App\Http\Controllers\ExpertEducationController;
+use App\Http\Controllers\VerificationEmailController;
 use App\Http\Controllers\ExpertSpecializationController;
 
 Route::group(['middleware' => 'guest'], function () {
@@ -67,6 +68,11 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('/experts/leaderboard', [ExpertController::class, 'leaderboard']);
     Route::post('/experts/promote/{user_id}', [ExpertController::class, 'promote']);
     Route::apiResource('experts', ExpertController::class);
+    Route::get('experts/{expertId}/educations', [ExpertEducationController::class, 'index']);
+    Route::post('experts/{expertId}/educations', [ExpertEducationController::class, 'store']);
+    Route::get('experts/{expertId}/educations/{id}', [ExpertEducationController::class, 'show']);
+    Route::put('experts/{expertId}/educations/{id}', [ExpertEducationController::class, 'update']);
+    Route::delete('experts/{expertId}/educations/{id}', [ExpertEducationController::class, 'destroy']);
 
     Route::apiResource('expert-specializations', ExpertSpecializationController::class);
 

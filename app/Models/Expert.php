@@ -59,4 +59,14 @@ class Expert extends Model
     {
         return $this->belongsTo(ExpertSpecialization::class, 'expert_specialization_id');
     }
+
+    public function educations()
+    {
+        return $this->hasMany(ExpertEducation::class)->orderBy('start_year', 'desc');
+    }
+
+    public function experiences()
+    {
+        return $this->hasMany(ExpertExperience::class)->orderBy('start_year', 'desc');
+    }
 }
