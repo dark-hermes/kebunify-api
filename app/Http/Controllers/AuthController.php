@@ -75,4 +75,63 @@ class AuthController extends Controller
             ], 500);
         }
     }
+
+    public function update(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $request->user()->id,
+            'phone' => 'nullable|string|max:20',
+        ]);
+
+        try {
+            $user = $request->user();
+            $user->update([
+                'name' => $request->name,
+                'email' => $request->email,
+            ]);
+
+            return response()->json([
+                'message' => __('http-statuses.200'),
+                'data' => $user->refresh()
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('http-statuses.500'),
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    public function changePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'password' => 'required|string|min:8',
+            'password_confirmation' => 'required|same:password',
+        ]);
+
+        $user = $request->user();
+
+        if (! Hash::check($request->current_password, $user->password)) {
+            throw ValidationException::withMessages([
+                'current_password' => [__('auth.password.failed')],
+            ]);
+        }
+
+        try {
+            $user->update([
+                'password' => Hash::make($request->password),
+            ]);
+
+            return response()->json([
+                'message' => __('http-statuses.200'),
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('http-statuses.500'),
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
+        }
+    }
 }
