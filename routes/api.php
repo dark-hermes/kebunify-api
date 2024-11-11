@@ -104,8 +104,8 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('chats/unread-count/{consultation_id}', [ChatController::class, 'unreadCount']);
     Route::put('chats/mark-as-read/{consultation_id}', [ChatController::class, 'markAsRead']);
 
-    Route::get('reviews/{product_id}', [ReviewController::class, 'index']);
-    Route::post('reviews/{product_id}', [ReviewController::class, 'store']);
+    Route::get('reviews/product/{product_id}', [ReviewController::class, 'index']);
+    Route::post('reviews/product/{product_id}', [ReviewController::class, 'store']);
     Route::put('reviews/{id}', [ReviewController::class, 'update']);
     Route::delete('reviews/{id}', [ReviewController::class, 'destroy']);
 
@@ -138,6 +138,8 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('/documents', [DocumentController::class, 'index']);
     Route::put('/documents/{id}/approve', [DocumentController::class, 'approveApplication']);
     Route::put('/documents/{id}/reject', [DocumentController::class, 'rejectApplication']);
+
+    Route::apiResource('articles', ArticleController::class)->only(['index', 'show']);
+
 });
 
-Route::apiResource('articles', ArticleController::class)->only(['index', 'show']);
