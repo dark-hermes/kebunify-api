@@ -138,6 +138,8 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('/documents', [DocumentController::class, 'index']);
     Route::put('/documents/{id}/approve', [DocumentController::class, 'approveApplication']);
     Route::put('/documents/{id}/reject', [DocumentController::class, 'rejectApplication']);
+
+    Route::apiResource('articles', ArticleController::class)->only(['index', 'show']);
+
 });
 
-Route::apiResource('articles', ArticleController::class)->only(['index', 'show']);

@@ -44,7 +44,17 @@ class AuthController extends Controller
 
     public function me(Request $request)
     {
-        return response()->json($request->user()->load('roles'));
+        try {
+            return response()->json([
+                'message' => __('http-statuses.200'),
+                'data' => $request->user()->load('roles')
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('http-statuses.500'),
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
+        }
     }
 
     public function register(Request $request){
