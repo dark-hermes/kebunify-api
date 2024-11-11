@@ -104,8 +104,8 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('chats/unread-count/{consultation_id}', [ChatController::class, 'unreadCount']);
     Route::put('chats/mark-as-read/{consultation_id}', [ChatController::class, 'markAsRead']);
 
-    Route::get('reviews/{product_id}', [ReviewController::class, 'index']);
-    Route::post('reviews/{product_id}', [ReviewController::class, 'store']);
+    Route::get('reviews/product/{product_id}', [ReviewController::class, 'index']);
+    Route::post('reviews/product/{product_id}', [ReviewController::class, 'store']);
     Route::put('reviews/{id}', [ReviewController::class, 'update']);
     Route::delete('reviews/{id}', [ReviewController::class, 'destroy']);
 
