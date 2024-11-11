@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ArticleController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
@@ -11,6 +12,10 @@ use App\Http\Controllers\VerificationEmailController;
 
 Route::group(['middleware' => 'guest'], function () {
     Route::post('/login',  [AuthController::class, 'login'])->name('login')->middleware('throttle:6,1');
+    Route::apiResource('experts', ExpertController::class);
+    Route::apiResource('articles', ArticleController::class);
+    Route::put('articles/ubah/{id}', [ArticleController::class,'ubah']);
+    Route::post('experts/promote/{user_id}', [ExpertController::class, 'promote']);
 });
 
 Route::group(['middleware' => 'auth:sanctum'], function () {name:
@@ -22,20 +27,6 @@ Route::group(['middleware' => 'auth:sanctum'], function () {name:
 
     Route::apiResource('roles', RoleController::class);
 
-    Route::get('/consultations', [ConsultationController::class, 'index']);
-    Route::get('/consultations/user/{user_id}', [ConsultationController::class, 'getByUserId']);
-    Route::get('/consultations/{id}', [ConsultationController::class, 'show']);
-    Route::post('/consultations', [ConsultationController::class, 'store']);
-    Route::put('/consultations/{id}', [ConsultationController::class, 'update']);
-    Route::put('/consultations/change-status/{id}', [ConsultationController::class, 'changeStatus']);
-    Route::delete('/consultations/{id}', [ConsultationController::class, 'destroy']);
-
-
-    Route::get('/experts/leaderboard', [ExpertController::class, 'leaderboard']);
-    Route::post('/experts/promote/{user_id}', [ExpertController::class, 'promote']);
-    Route::apiResource('experts', ExpertController::class);
-
-=======
     Route::apiResource('users', UserController::class);
     Route::post('users/{id}/upload-avatar', [UserController::class, 'storeAvatar']);
     Route::delete('users/{id}/remove-avatar', [UserController::class, 'removeAvatar']);
@@ -47,7 +38,8 @@ Route::group(['middleware' => 'auth:sanctum'], function () {name:
     Route::put('consultations/{id}', [ConsultationController::class, 'update']);
     Route::put('consultations/change-status/{id}', [ConsultationController::class, 'changeStatus']);
     Route::delete('consultations/{id}', [ConsultationController::class, 'destroy']);
-});
 
-<<<<<<< HEAD
->>>>>>> 272d906dcaa1fabb785e742f7cae72a6de99a567
+    Route::get('experts/leaderboard', [ExpertController::class, 'leaderboard']);
+
+
+});

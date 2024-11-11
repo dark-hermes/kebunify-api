@@ -12,7 +12,7 @@ class ExpertController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Expert::with('user');
+        $query = Expert::query();
 
         if ($request->has('user_id')) {
             $query->where('user_id', $request->input('user_id'));}
@@ -47,8 +47,6 @@ class ExpertController extends Controller
 
 
         return response()->json($query->orderBy('created_at','desc')->get(),200);
-
-
     }
 
     /**

@@ -20,4 +20,8 @@ class Expert extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function specialization() {
+        return $this->belongsTo(ExpertSpecialization::class);
+    }
+
 }
