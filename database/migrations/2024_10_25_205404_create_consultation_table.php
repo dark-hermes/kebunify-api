@@ -1,5 +1,4 @@
 <?php
-
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -18,6 +17,7 @@ return new class extends Migration
             $table->enum('status', ['open', 'closed']);
             $table->enum('content_payment_status', ['paid', 'unpaid', 'pending']);
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('expert_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -27,7 +27,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('consultation');
+        Schema::table('consultations', function (Blueprint $table) {
+            $table->dropForeign(['user_id']);
+            $table->dropForeign(['expert_id']);
+        });
+        Schema::dropIfExists('consultations');
     }
 };
-    

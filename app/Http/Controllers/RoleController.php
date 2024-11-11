@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Spatie\Permission\Middleware\PermissionMiddleware;
@@ -27,17 +27,34 @@ class RoleController extends Controller implements HasMiddleware
     public function index(Request $request)
     {
         $search = $request->query('search');
-        $paginate = $request->query('paginate') ?? 10;
+        $limit = $request->query('limit') ?? 10;
 
         try {
             $roles = Role::query()
                 ->when($search, function ($query, $search) {
                     return $query->where('name', 'like', '%' . $search . '%');
-                })->with('permissions');
+                })->with('permissions')->paginate($limit);
 
-            $roles = $paginate
-                ? $roles->paginate($paginate)
-                : $roles->get();
+            return response()->json([
+                'message' => __('http-statuses.200'),
+                'data' => $roles,
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('http-statuses.500'),
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    public function list(Request $request)
+    {
+        $search = $request->query('search');
+        try {
+            $roles = Role::query()
+                ->when($search, function ($query, $search) {
+                    return $query->where('name', 'like', '%' . $search . '%');
+                })->get();
 
             return response()->json([
                 'message' => __('http-statuses.200'),
@@ -169,7 +186,7 @@ class RoleController extends Controller implements HasMiddleware
 
             DB::transaction(function () use ($role) {
                 $role->permissions()->detach();
-                // $role->delete();
+                $role->delete();
             });
 
             return response()->json([
