@@ -23,6 +23,10 @@ class PermissionSeeder extends Seeder
         $models = [
             'role',
             'user',
+            'expert',
+            'expert_specialization',
+            'tag',
+            'article',
         ];
 
         $specificPermissions = [

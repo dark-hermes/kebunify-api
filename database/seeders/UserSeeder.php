@@ -29,14 +29,14 @@ class UserSeeder extends Seeder
                 ],
             ],
             [
-                'role' => 'seller',
+                'role' => 'user',
                 'users' => [
                     'seller1@mail.test',
                     'seller2@mail.test',
                 ],
             ],
             [
-                'role' => 'expert',
+                'role' => 'user',
                 'users' => [
                     'expert1@mail.test',
                     'expert2@mail.test',

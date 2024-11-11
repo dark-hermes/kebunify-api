@@ -7,4 +7,8 @@ return [
     'password' => 'The password is incorrect.',
     'success'  => 'You have been logged in.',
     'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
+    'register' => [
+        'success' => 'You have been registered.',
+        'failed'  => 'Registration failed.',
+    ]
 ];
