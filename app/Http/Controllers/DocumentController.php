@@ -24,13 +24,15 @@ class DocumentController extends Controller
 
         try {
             if ($request->hasFile('document') && $request->file('document')->isValid()) {
-                $documentPath = $request->file('document')->store('documents');
-                Log::info('Document stored at: ' . $documentPath);
+                // $documentPath = $request->file('document')->store('documents');
+                $document = $request->file('document');
+                $documentName = time() . '_' . $document->getClientOriginalName();
+                $document->storeAs('documents', $documentName, 'public');
 
                 $document = Document::create([
                     'user_id' => Auth::id(),
                     'role_applied' => $request->role_applied,
-                    'document_path' => $documentPath,
+                    'document_path' => 'storage/documents/' . $documentName,
                     'status' => 'pending',
                 ]);
 
@@ -73,7 +75,10 @@ class DocumentController extends Controller
         }
 
         $application->update(['status' => 'APPROVED']);
-        return response()->json($application);
+        return response()->json([
+            'message' => 'Application approved successfully',
+            'data' => $application
+        ]);
     }
 
     public function rejectApplication(Request $request, $id)
@@ -85,12 +90,18 @@ class DocumentController extends Controller
         }
 
         $application->update(['status' => 'REJECTED']);
-        return response()->json($application);
+        return response()->json([
+            'message' => 'Application rejected successfully',
+            'data' => $application
+        ]);
     }
 
     public function index(Request $request)
     {
         $applications = Document::all();
-        return response()->json($applications);
+        return response()->json([
+            'message' => 'Applications fetched successfully',
+            'data' => $applications
+        ]);
     }
 }

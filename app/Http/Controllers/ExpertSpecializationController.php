@@ -14,18 +14,14 @@ class ExpertSpecializationController extends Controller
     public function index(Request $request)
     {
         $search = $request->query('search');
-        $paginate = $request->query('paginate') ?? 10;
+        $limit = $request->query('limit') ?? 10;
 
         try {
             $expertSpecializations = ExpertSpecialization::query()
                 ->when($search, function ($query, $search) {
                     return $query->where('name', 'like', '%' . $search . '%');
-                });
-
-            $expertSpecializations = $paginate
-                ? $expertSpecializations->paginate($paginate)
-                : $expertSpecializations->get();
-
+                })
+                ->paginate($limit);
             return response()->json([
                 'message' => __('http-statuses.200'),
                 'data' => $expertSpecializations,
@@ -44,7 +40,7 @@ class ExpertSpecializationController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:32',
+            'name' => 'required|string|max:32|unique:expert_specializations,name',
         ]);
 
         try {
@@ -100,7 +96,7 @@ class ExpertSpecializationController extends Controller
     public function update(Request $request, string $id)
     {
         $request->validate([
-            'name' => 'required|string|max:32',
+            'name' => 'required|string|max:32|unique:expert_specializations,name,' . $id,
         ]);
 
         try {

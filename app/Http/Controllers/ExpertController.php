@@ -42,7 +42,7 @@ class ExpertController extends Controller
     public function show(String $id)
     {
         try {
-            $expert = Expert::with('user', 'specialization')->find($id);
+            $expert = Expert::where('id', $id)->with('user', 'specialization', 'educations', 'experiences')->first();
 
             if (!$expert) {
                 return response()->json([
@@ -66,6 +66,7 @@ class ExpertController extends Controller
     {
         $period = $request->query('period') ?? 'month';
         $category = $request->query('category') ?? null;
+        $limit = $request->query('limit') ?? 5;
 
         try {
             $experts = Expert::with('user');
@@ -81,7 +82,10 @@ class ExpertController extends Controller
                 $experts->whereRelation('specialization', 'name', $category);
             }
 
-            return response()->json($experts->orderBy('created_at', 'desc')->get(), 200);
+            return response()->json([
+                'message' => __('http-statuses.200'),
+                'data' => $experts->orderBy('created_at', 'desc')->take($limit)->get(),
+            ]);
         } catch (\Throwable $th) {
             return response()->json([
                 'message' => __('http-statuses.500'),
@@ -194,6 +198,33 @@ class ExpertController extends Controller
             $expert->delete();
 
             return response()->json(['message' => 'Expert deleted successfully'], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('http-statuses.500'),
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    public function switchStatus(string $id)
+    {
+        try {
+            $expert = Expert::find($id);
+
+            if (!$expert) {
+                return response()->json([
+                    'message' => __('http-statuses.404'),
+                ], 404);
+            }
+
+            $expert->update([
+                'is_active' => ! $expert->is_active,
+            ]);
+
+            return response()->json([
+                'message' => __('http-statuses.200'),
+                'data' => $expert,
+            ]);
         } catch (\Throwable $th) {
             return response()->json([
                 'message' => __('http-statuses.500'),
