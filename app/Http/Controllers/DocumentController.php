@@ -75,7 +75,10 @@ class DocumentController extends Controller
         }
 
         $application->update(['status' => 'APPROVED']);
-        return response()->json($application);
+        return response()->json([
+            'message' => 'Application approved successfully',
+            'data' => $application
+        ]);
     }
 
     public function rejectApplication(Request $request, $id)
@@ -87,12 +90,18 @@ class DocumentController extends Controller
         }
 
         $application->update(['status' => 'REJECTED']);
-        return response()->json($application);
+        return response()->json([
+            'message' => 'Application rejected successfully',
+            'data' => $application
+        ]);
     }
 
     public function index(Request $request)
     {
         $applications = Document::all();
-        return response()->json($applications);
+        return response()->json([
+            'message' => 'Applications fetched successfully',
+            'data' => $applications
+        ]);
     }
 }
