@@ -17,4 +17,9 @@ class Tag extends Model
     {
         return $this->belongsToMany(Article::class);
     }
+
+    public function forums()
+    {
+        return $this->belongsToMany(Forum::class, 'forum_tag');
+    }
 }

@@ -16,12 +16,24 @@ return new class extends Migration
             $table->text('comment_content');
             $table->unsignedBigInteger('forum_id');
             $table->unsignedBigInteger('user_id');
-            $table->unsignedBigInteger('parent_id')->nullable(); 
+            $table->unsignedBigInteger('parent_id')->nullable();
             $table->timestamps();
-            
-            $table->foreign('forum_id')->references('id')->on('forum');
-            $table->foreign('user_id')->references('id')->on('users');
-            $table->foreign('parent_id')->references('id')->on('forum_comment');
+
+            $table->foreign('forum_id')
+                ->references('id')->on('forum')
+                ->onDelete('cascade');
+
+            $table->foreign('user_id')
+                ->references('id')->on('users')
+                ->onDelete('cascade');
+
+            $table->foreign('parent_id')
+                ->references('id')->on('forum_comment')
+                ->onDelete('cascade');
+
+            $table->index('forum_id');
+            $table->index('user_id');
+            $table->index('parent_id');
         });
     }
 
