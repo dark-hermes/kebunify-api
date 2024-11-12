@@ -20,6 +20,8 @@ use App\Http\Controllers\ExpertEducationController;
 use App\Http\Controllers\ExpertExperienceController;
 use App\Http\Controllers\VerificationEmailController;
 use App\Http\Controllers\ExpertSpecializationController;
+use App\Http\Controllers\ForumController;
+use App\Http\Controllers\TagsController;
 
 Route::group(['middleware' => 'guest'], function () {
     Route::post('/login',  [AuthController::class, 'login'])->name('login')->middleware('throttle:6,1');
@@ -90,8 +92,13 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::delete('experts/{expertId}/experiences/{id}', [ExpertExperienceController::class, 'destroy']);
     Route::delete('experts/experiences/auth/{id}', [ExpertExperienceController::class, 'destroyAuth']);
 
-
     Route::apiResource('expert-specializations', ExpertSpecializationController::class);
+
+    Route::apiResource('tags', TagsController::class);
+
+    Route::post('/forum', [ForumController::class, 'store']);
+    Route::put('forum/{id}', [ForumController::class, 'update']);
+    // Route::post('/forum/{id}/comment', [CommentController::class, 'store']);
 
     Route::apiResource('articles', ArticleController::class)->except(['index', 'show']);
     Route::post('articles/{id}/upload-image', [ArticleController::class, 'uploadImage']);
@@ -140,6 +147,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::put('/documents/{id}/reject', [DocumentController::class, 'rejectApplication']);
 
     Route::apiResource('articles', ArticleController::class)->only(['index', 'show']);
-
 });
 
+Route::get('/forum', [ForumController::class, 'index']);
+Route::get('/forum/{id}', [ForumController::class, 'show']);

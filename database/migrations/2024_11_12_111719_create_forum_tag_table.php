@@ -11,15 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('forum', function (Blueprint $table) {
+        Schema::create('forum_tag', function (Blueprint $table) {
             $table->id();
-            $table->string('title', 255);
-            $table->string('tags', 255)->nullable();
-            $table->unsignedBigInteger('author');
+            $table->unsignedBigInteger('forum_id');
+            $table->unsignedBigInteger('tag_id');
             $table->timestamps();
 
-            $table->foreign('author')->references('id')->on('users');
-            // $table->foreign('tags')->references('id')->on('tags');
+            $table->foreign('forum_id')->references('id')->on('forum')->onDelete('cascade');
+            $table->foreign('tag_id')->references('id')->on('tags')->onDelete('cascade');
         });
     }
 
@@ -28,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('forum');
+        Schema::dropIfExists('forum_tag');
     }
 };
