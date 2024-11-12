@@ -9,9 +9,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ExpertSpecialization extends Model
 {
-<<<<<<< HEAD
-
-=======
     use HasFactory;
 
     protected $fillable = [
@@ -23,4 +20,3 @@ class ExpertSpecialization extends Model
         return $this->hasMany(Expert::class);
     }
 }
->>>>>>> cec929c67adc22ebf556adb4f9a6fc6f274d6070
