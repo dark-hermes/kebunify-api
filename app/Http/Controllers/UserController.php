@@ -316,10 +316,10 @@ class UserController extends Controller implements HasMiddleware
             if ($request->hasFile('avatar')) {
                 $avatar = $request->file('avatar');
                 $avatarName = time() . '.' . $avatar->getClientOriginalExtension();
-                $avatar->move(public_path('images'), $avatarName);
+                $avatar->storeAs('avatars', $avatarName, 'public');
 
                 $user->update([
-                    'avatar' => $avatarName,
+                    'avatar' => 'storage/avatars/' . $avatarName,
                 ]);
             }
 

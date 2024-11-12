@@ -87,7 +87,7 @@ class User extends Authenticatable implements MustVerifyEmail
             if (str_starts_with($this->avatar, 'http')) {
                 return $this->avatar;
             } else {
-                return Storage::url( $this->avatar);
+                return asset($this->avatar);
             }
         } else {
             return asset('images/placeholders/user.webp');
