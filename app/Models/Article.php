@@ -1,29 +1,6 @@
 <?php
 
 namespace App\Models;
-
-<<<<<<< HEAD
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-
-class Article extends Model
-{
-    //
-    use HasFactory;
-
-    protected $fillable = [
-        'title',
-        'picture',
-        'content',
-        'expert_id',
-        'is_premium',
-        'tags',
-    ];
-
-    public function expert(){
-        return $this->belongsTo(Expert::class);
-    }
-=======
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -88,5 +65,4 @@ class Article extends Model
     {
         return $this->hasMany(ArticleComment::class);
     }
->>>>>>> cec929c67adc22ebf556adb4f9a6fc6f274d6070
 }

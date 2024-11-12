@@ -13,12 +13,9 @@ class ExpertController extends Controller
      */
     public function index(Request $request)
     {
-<<<<<<< HEAD
         $query = Expert::query();
-=======
         $search = $request->query('search');
         $limit = $request->query('limit') ?? 10;
->>>>>>> cec929c67adc22ebf556adb4f9a6fc6f274d6070
 
         try {
             $experts = Expert::query()
@@ -91,17 +88,15 @@ class ExpertController extends Controller
                 'error' => config('app.debug') ? $th->getMessage() : null,
             ], 500);
         }
-<<<<<<< HEAD
 
         if($request -> has('category')) {
-            $searh = $request->input('category');
-            $query->where('specialization','LIKE',"%{$searh}%");
+            $search = $request->input('category');
+            $query->where('specialization','LIKE',"%{$search}%");
         }
 
 
         return response()->json($query->orderBy('created_at','desc')->get(),200);
-=======
->>>>>>> cec929c67adc22ebf556adb4f9a6fc6f274d6070
+
     }
 
     /**

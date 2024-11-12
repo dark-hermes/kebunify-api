@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\ArticleController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
@@ -11,6 +10,7 @@ use App\Http\Controllers\ExpertController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SellerController;
 use App\Http\Controllers\ArticleController;
+use App\Http\Controllers\ArticleCommentController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DocumentController;
@@ -24,17 +24,11 @@ use App\Http\Controllers\ExpertSpecializationController;
 
 Route::group(['middleware' => 'guest'], function () {
     Route::post('/login',  [AuthController::class, 'login'])->name('login')->middleware('throttle:6,1');
-<<<<<<< HEAD
-    Route::apiResource('experts', ExpertController::class);
-    Route::apiResource('articles', ArticleController::class);
-    Route::put('articles/ubah/{id}', [ArticleController::class,'ubah']);
-    Route::post('experts/promote/{user_id}', [ExpertController::class, 'promote']);
-=======
     Route::post('/register', [AuthController::class, 'register'])->name('register');
-
     Route::post('/email/password', [PasswordResetController::class, 'setResetLinkEmail']);
     Route::post('/email/password-reset', [PasswordResetController::class, 'reset'])->middleware('signed')->name('password.reset');
->>>>>>> cec929c67adc22ebf556adb4f9a6fc6f274d6070
+    Route::get('tags', [ArticleController::class, 'getTags']);
+    Route::apiResource('articles', ArticleController::class)->only(['index', 'show']);
 });
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
@@ -49,24 +43,8 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('roles/list', [RoleController::class, 'list']);
     Route::apiResource('roles', RoleController::class);
 
-<<<<<<< HEAD
     Route::apiResource('users', UserController::class);
-    Route::post('users/{id}/upload-avatar', [UserController::class, 'storeAvatar']);
-    Route::delete('users/{id}/remove-avatar', [UserController::class, 'removeAvatar']);
 
-    Route::get('consultations', [ConsultationController::class, 'index']);
-    Route::get('consultations/user/{user_id}', [ConsultationController::class, 'getByUserId']);
-    Route::get('consultations/{id}', [ConsultationController::class, 'show']);
-    Route::post('consultations', [ConsultationController::class, 'store']);
-    Route::put('consultations/{id}', [ConsultationController::class, 'update']);
-    Route::put('consultations/change-status/{id}', [ConsultationController::class, 'changeStatus']);
-    Route::delete('consultations/{id}', [ConsultationController::class, 'destroy']);
-
-    Route::get('experts/leaderboard', [ExpertController::class, 'leaderboard']);
-
-
-});
-=======
     Route::name('users.')->group(function () {
         Route::get('users/export', [UserController::class, 'export'])->name('export');
         Route::apiResource('users', UserController::class)->names([
@@ -122,6 +100,9 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::apiResource('articles', ArticleController::class)->except(['index', 'show']);
     Route::post('articles/{id}/upload-image', [ArticleController::class, 'uploadImage']);
 
+
+    Route::apiResource('comments', ArticleCommentController::class)->except(['index', 'show']);
+
     Route::get('chats/{consultation_id}', [ChatController::class, 'index']);
     Route::post('chats/{consultation_id}', [ChatController::class, 'store']);
     Route::get('chats/show/{id}', [ChatController::class, 'show']);
@@ -165,8 +146,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::put('/documents/{id}/approve', [DocumentController::class, 'approveApplication']);
     Route::put('/documents/{id}/reject', [DocumentController::class, 'rejectApplication']);
 
-    Route::apiResource('articles', ArticleController::class)->only(['index', 'show']);
+    // Route::apiResource('articles', ArticleController::class)->only(['index', 'show']);
+
 
 });
-
->>>>>>> cec929c67adc22ebf556adb4f9a6fc6f274d6070

@@ -21,9 +21,7 @@ class ArticleSeeder extends Seeder
         // ])->each(function ($article) {
         //     $article->tags()->attach([1, 2, 3]);
         // });
-
-        // Article::factory(5)->create([
-        //     'expert_id' => Expert::inRandomOrder()->first()->id,
+~
         //     'is_published' => true,
         //     'is_premium' => true,
         // ])->each(function ($article) {
