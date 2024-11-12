@@ -27,6 +27,7 @@ class PermissionSeeder extends Seeder
             'expert_specialization',
             'tag',
             'article',
+            'category',
         ];
 
         $specificPermissions = [
