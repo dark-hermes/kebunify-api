@@ -20,6 +20,7 @@ use App\Http\Controllers\ExpertEducationController;
 use App\Http\Controllers\ExpertExperienceController;
 use App\Http\Controllers\VerificationEmailController;
 use App\Http\Controllers\ExpertSpecializationController;
+use App\Http\Controllers\ForumCommentController;
 use App\Http\Controllers\ForumController;
 use App\Http\Controllers\TagsController;
 
@@ -96,9 +97,17 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     Route::apiResource('tags', TagsController::class);
 
+    // Forum and Forum Comments
     Route::post('/forum', [ForumController::class, 'store']);
     Route::put('forum/{id}', [ForumController::class, 'update']);
-    // Route::post('/forum/{id}/comment', [CommentController::class, 'store']);
+    Route::delete('forum/{id}', [ForumController::class, 'destroy']);
+    
+    Route::post('forum-comments', [ForumCommentController::class, 'store']);
+    Route::put('forum-comments/{id}', [ForumCommentController::class, 'update']);
+    Route::delete('forum-comments/{id}', [ForumCommentController::class, 'destroy']);
+
+
+
 
     Route::apiResource('articles', ArticleController::class)->except(['index', 'show']);
     Route::post('articles/{id}/upload-image', [ArticleController::class, 'uploadImage']);
@@ -151,3 +160,6 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
 Route::get('/forum', [ForumController::class, 'index']);
 Route::get('/forum/{id}', [ForumController::class, 'show']);
+
+Route::get('forum/{forumId}/comments', [ForumCommentController::class, 'index']);
+
