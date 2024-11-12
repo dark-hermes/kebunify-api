@@ -15,33 +15,33 @@ class TransactionController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Transaction::with(['details.product', 'user']);
+        try {
+            $transaction = Transaction::where('transaction_number', 'like', "%{$request->search}%")
+                ->orWhere('status', 'like', "%{$request->search}%")
+                ->orWhere('payment_status', 'like', "%{$request->search}%")
+                ->orderBy('created_at', 'desc')
+                ->paginate($request->limit ?? 10);
 
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            return response()->json([
+                'message' => 'Transactions retrieved successfully',
+                'data' => $transaction->load('items.product')
+            ]);
+        } catch (Exception $e) {
+            return response()->json(['message' => 'Failed to retrieve transactions', 'error' => $e->getMessage()], 400);
         }
-
-        if ($request->filled('payment_status')) {
-            $query->where('payment_status', $request->payment_status);
-        }
-
-        if ($request->filled('date_from')) {
-            $query->whereDate('created_at', '>=', $request->date_from);
-        }
-
-        if ($request->filled('date_to')) {
-            $query->whereDate('created_at', '<=', $request->date_to);
-        }
-
-        $transactions = $query->latest()->paginate(10);
-
-        return response()->json($transactions);
     }
 
     public function show($id)
     {
-        $transaction = Transaction::findOrFail($id);
-        return response()->json($transaction);
+        try {
+            $transaction = Transaction::findOrFail($id);
+            return response()->json([
+                'message' => 'Transaction retrieved successfully',
+                'data' => $transaction->load('items.product')
+            ]);
+        } catch (Exception $e) {
+            return response()->json(['message' => 'Failed to retrieve transaction', 'error' => $e->getMessage()], 400);
+        }
     }
 
     public function store(Request $request)
@@ -54,7 +54,6 @@ class TransactionController extends Controller
         ]);
 
         try {
-            // Calculate total amount and items array
             $totalAmount = 0;
             $items = [];
             foreach ($request->items as $item) {
@@ -78,7 +77,6 @@ class TransactionController extends Controller
                 ];
             }
 
-            // Create transaction
             $transaction = Transaction::create([
                 'user_id' => Auth::id(),
                 'transaction_number' => 'TRX-' . Str::random(10),
@@ -88,7 +86,6 @@ class TransactionController extends Controller
                 'notes' => $request->notes
             ]);
 
-            // Insert transaction items
             foreach ($items as $item) {
                 TransactionItem::create([
                     'transaction_id' => $transaction->id,
@@ -98,7 +95,6 @@ class TransactionController extends Controller
                     'subtotal' => $item['subtotal']
                 ]);
 
-                // Update stock
                 $item['product']->decrement('stock', $item['quantity']);
             }
 
@@ -107,13 +103,10 @@ class TransactionController extends Controller
                 'data' => $transaction->load('items.product')
             ], 201);
         } catch (Exception $e) {
-            return response()->json([
-                'message' => 'Transaction failed',
-                'error' => $e->getMessage()
-            ], 400);
+            return response()->json(['message' => 'Transaction failed', 'error' => $e->getMessage()], 400);
         }
     }
-    
+
     public function updateStatus(Request $request, Transaction $transaction)
     {
         $request->validate([
@@ -121,28 +114,36 @@ class TransactionController extends Controller
             'notes' => 'nullable|string|max:500'
         ]);
 
-        $data = [
-            'status' => $request->status,
-            'notes' => $request->input('notes', $transaction->notes)
-        ];
+        try {
+            $data = [
+                'status' => $request->status,
+                'notes' => $request->input('notes', $transaction->notes)
+            ];
 
-        if ($request->status === 'cancelled' && $transaction->status !== 'cancelled') {
-            $this->handleCancellation($transaction);
-            $data['cancelled_at'] = now();
+            if ($request->status === 'cancelled' && $transaction->status !== 'cancelled') {
+                $this->handleCancellation($transaction);
+                $data['cancelled_at'] = now();
+            }
+
+            $transaction->update($data);
+
+            return response()->json([
+                'message' => 'Transaction status updated successfully',
+                'data' => $transaction->fresh(['items.product', 'user'])
+            ]);
+        } catch (Exception $e) {
+            return response()->json(['message' => 'Failed to update transaction status', 'error' => $e->getMessage()], 400);
         }
-
-        $transaction->update($data);
-
-        return response()->json([
-            'message' => 'Transaction status updated successfully',
-            'data' => $transaction->fresh(['items.product', 'user'])
-        ]);
     }
 
     private function handleCancellation(Transaction $transaction)
     {
-        foreach ($transaction->items as $item) {
-            $item->product->increment('stock', $item->quantity);
+        try {
+            foreach ($transaction->items as $item) {
+                $item->product->increment('stock', $item->quantity);
+            }
+        } catch (Exception $e) {
+            throw new Exception("Failed to handle cancellation: " . $e->getMessage());
         }
     }
 
@@ -153,21 +154,25 @@ class TransactionController extends Controller
             'notes' => 'nullable|string|max:500'
         ]);
 
-        $data = [
-            'payment_status' => $request->payment_status,
-            'notes' => $request->input('notes', $transaction->notes),
-        ];
+        try {
+            $data = [
+                'payment_status' => $request->payment_status,
+                'notes' => $request->input('notes', $transaction->notes),
+            ];
 
-        if ($request->payment_status === 'paid' && !$transaction->paid_at) {
-            $data['paid_at'] = now();
+            if ($request->payment_status === 'paid' && !$transaction->paid_at) {
+                $data['paid_at'] = now();
+            }
+
+            $transaction->update($data);
+
+            return response()->json([
+                'message' => 'Payment status updated successfully',
+                'data' => $transaction->fresh(['items.product', 'user'])
+            ]);
+        } catch (Exception $e) {
+            return response()->json(['message' => 'Failed to update payment status', 'error' => $e->getMessage()], 400);
         }
-
-        $transaction->update($data);
-
-        return response()->json([
-            'message' => 'Payment status updated successfully',
-            'data' => $transaction->fresh(['items.product', 'user'])
-        ]);
     }
 
     // public function destroy($id)
