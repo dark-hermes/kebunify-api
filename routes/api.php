@@ -73,6 +73,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     Route::get('/experts/leaderboard', [ExpertController::class, 'leaderboard']);
     Route::post('/experts/promote/{user_id}', [ExpertController::class, 'promote']);
+    Route::put('/experts/{id}/switch-status', [ExpertController::class, 'switchStatus']);
     Route::apiResource('experts', ExpertController::class);
 
     Route::get('experts/{expertId}/educations', [ExpertEducationController::class, 'index']);
@@ -101,7 +102,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('/forum', [ForumController::class, 'store']);
     Route::put('forum/{id}', [ForumController::class, 'update']);
     Route::delete('forum/{id}', [ForumController::class, 'destroy']);
-    
+
     Route::post('forum-comments', [ForumCommentController::class, 'store']);
     Route::put('forum-comments/{id}', [ForumCommentController::class, 'update']);
     Route::delete('forum-comments/{id}', [ForumCommentController::class, 'destroy']);

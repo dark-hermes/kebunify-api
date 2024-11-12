@@ -18,7 +18,6 @@ class ExpertSpecialization extends Model
     protected $appends = [
         'total_experts',
         'total_active_experts',
-        'parsed_created_at',
     ];
 
     public function experts(): HasMany
@@ -34,10 +33,5 @@ class ExpertSpecialization extends Model
     public function getTotalActiveExpertsAttribute(): int
     {
         return $this->experts()->where('is_active', true)->count();
-    }
-
-    public function getParsedCreatedAtAttribute(): string
-    {
-        return $this->created_at->format('d F Y');
     }
 }
