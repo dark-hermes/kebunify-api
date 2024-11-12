@@ -21,6 +21,11 @@ class DatabaseSeeder extends Seeder
             ExpertSeeder::class,
             TagSeeder::class,
             ArticleSeeder::class,
+            CategorySeeder::class,
+            ProductSeeder::class,
+            SellerSeeder::class,
+            TransactionSeeder::class,
+            ReviewSeeder::class,
         ]);
     }
 }
