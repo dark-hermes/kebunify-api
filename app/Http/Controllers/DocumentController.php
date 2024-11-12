@@ -24,13 +24,15 @@ class DocumentController extends Controller
 
         try {
             if ($request->hasFile('document') && $request->file('document')->isValid()) {
-                $documentPath = $request->file('document')->store('documents');
-                Log::info('Document stored at: ' . $documentPath);
+                // $documentPath = $request->file('document')->store('documents');
+                $document = $request->file('document');
+                $documentName = time() . '_' . $document->getClientOriginalName();
+                $document->storeAs('documents', $documentName, 'public');
 
                 $document = Document::create([
                     'user_id' => Auth::id(),
                     'role_applied' => $request->role_applied,
-                    'document_path' => $documentPath,
+                    'document_path' => 'storage/documents/' . $documentName,
                     'status' => 'pending',
                 ]);
 
