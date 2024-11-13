@@ -72,4 +72,15 @@ class ForumController extends Controller
 
         return new ForumDetailResource($forum->load('writer', 'tags', 'comments'));
     }
+
+    public function destroy($id)
+    {
+        $forum = Forum::findOrFail($id);
+
+        $forum->delete();
+
+        return response()->json([
+            'message' => 'Forum berhasil dihapus'
+        ], 200);
+    }
 }
