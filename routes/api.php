@@ -115,6 +115,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('reviews/product/{product_id}', [ReviewController::class, 'store']);
     Route::put('reviews/{id}', [ReviewController::class, 'update']);
     Route::delete('reviews/{id}', [ReviewController::class, 'destroy']);
+    Route::get('reviews/{id}', [ReviewController::class, 'show']);
 
     Route::get('/products', [ProductController::class, 'index']);
     Route::get('/products/{id}', [ProductController::class, 'show']);

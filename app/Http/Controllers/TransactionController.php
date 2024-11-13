@@ -16,31 +16,43 @@ class TransactionController extends Controller
     public function index(Request $request)
     {
         try {
-            $transaction = Transaction::where('transaction_number', 'like', "%{$request->search}%")
-                ->orWhere('status', 'like', "%{$request->search}%")
-                ->orWhere('payment_status', 'like', "%{$request->search}%")
-                ->orderBy('created_at', 'desc')
-                ->paginate($request->limit ?? 10);
-
+            $query = Transaction::with([
+                'items.product.category',
+                'items.product.reviews.user.roles',
+                'items.product.user',
+                'user'
+            ]);
+    
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function ($q) use ($search) {
+                    $q->where('transaction_number', 'like', "%{$search}%")
+                      ->orWhere('status', 'like', "%{$search}%")
+                      ->orWhere('payment_status', 'like', "%{$search}%");
+                });
+            }
+    
+            if ($request->filled('status')) {
+                $query->whereIn('status', explode(',', $request->status));
+            }
+    
+            if ($request->filled('payment_status')) {
+                $query->whereIn('payment_status', explode(',', $request->payment_status));
+            }
+    
+            $transactions = $query->orderBy('created_at', 'desc')
+                                  ->paginate($request->limit ?? 10);
+    
             return response()->json([
                 'message' => 'Transactions retrieved successfully',
-                'data' => $transaction->load('items.product')
+                'data' => $transactions
             ]);
         } catch (Exception $e) {
-            return response()->json(['message' => 'Failed to retrieve transactions', 'error' => $e->getMessage()], 400);
-        }
-    }
-
-    public function show($id)
-    {
-        try {
-            $transaction = Transaction::findOrFail($id);
+            Log::error('Error fetching transactions: ' . $e->getMessage());
             return response()->json([
-                'message' => 'Transaction retrieved successfully',
-                'data' => $transaction->load('items.product')
-            ]);
-        } catch (Exception $e) {
-            return response()->json(['message' => 'Failed to retrieve transaction', 'error' => $e->getMessage()], 400);
+                'message' => 'Failed to retrieve transactions',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
