@@ -43,12 +43,12 @@ class UserController extends Controller implements HasMiddleware
             $users = $users->paginate($limit);
 
             return response()->json([
-                'message' => __('http-statuses.200'),
+                'message' => __('responses.index.success', ['resource' => __('resources.user')]),
                 'data' => $users,
             ]);
         } catch (\Throwable $th) {
             return response()->json([
-                'message' => __('http-statuses.500'),
+                'message' => __('responses.index.failed', ['resource' => __('resources.user')]),
                 'error' => config('app.debug') ? $th->getMessage() : null,
             ], 500);
         }
@@ -87,12 +87,12 @@ class UserController extends Controller implements HasMiddleware
             });
 
             return response()->json([
-                'message' => __('http-statuses.201'),
+                'message' => __('responses.store.success', ['resource' => __('resources.user')]),
                 'data' => $user,
             ], 201);
         } catch (\Throwable $th) {
             return response()->json([
-                'message' => __('http-statuses.500'),
+                'message' => __('responses.store.failed', ['resource' => __('resources.user')]),
                 'error' => config('app.debug') ? $th->getMessage() : null,
             ], 500);
         }
@@ -114,12 +114,12 @@ class UserController extends Controller implements HasMiddleware
             }
 
             return response()->json([
-                'message' => __('http-statuses.200'),
+                'message' => __('responses.show.success', ['resource' => __('resources.user')]),
                 'data' => $user,
             ]);
         } catch (\Throwable $th) {
             return response()->json([
-                'message' => __('http-statuses.500'),
+                'message' => __('responses.show.failed', ['resource' => __('resources.user')]),
                 'error' => config('app.debug') ? $th->getMessage() : null,
             ], 500);
         }
@@ -158,12 +158,12 @@ class UserController extends Controller implements HasMiddleware
             });
 
             return response()->json([
-                'message' => __('http-statuses.200'),
+                'message' => __('responses.update.success', ['resource' => __('resources.user')]),
                 'data' => $user,
             ]);
         } catch (\Throwable $th) {
             return response()->json([
-                'message' => __('http-statuses.500'),
+                'message' => __('responses.update.failed', ['resource' => __('resources.user')]),
                 'error' => config('app.debug') ? $th->getMessage() : null,
             ], 500);
         }
@@ -188,11 +188,11 @@ class UserController extends Controller implements HasMiddleware
             });
 
             return response()->json([
-                'message' => __('http-statuses.200'),
+                'message' => __('responses.destroy.success', ['resource' => __('resources.user')]),
             ]);
         } catch (\Throwable $th) {
             return response()->json([
-                'message' => __('http-statuses.500'),
+                'message' => __('responses.destroy.failed', ['resource' => __('resources.user')]),
                 'error' => config('app.debug') ? $th->getMessage() : null,
             ], 500);
         }
@@ -212,12 +212,12 @@ class UserController extends Controller implements HasMiddleware
             $followers = $user->followers;
 
             return response()->json([
-                'message' => __('http-statuses.200'),
+                'message' => __('responses.index.success', ['resource' => __('resources.follower')]),
                 'data' => $followers,
             ]);
         } catch (\Throwable $th) {
             return response()->json([
-                'message' => __('http-statuses.500'),
+                'message' => __('responses.index.failed', ['resource' => __('resources.follower')]),
                 'error' => config('app.debug') ? $th->getMessage() : null,
             ], 500);
         }
@@ -237,12 +237,12 @@ class UserController extends Controller implements HasMiddleware
             $following = $user->following;
 
             return response()->json([
-                'message' => __('http-statuses.200'),
+                'message' => __('responses.index.success', ['resource' => __('resources.following')]),
                 'data' => $following,
             ]);
         } catch (\Throwable $th) {
             return response()->json([
-                'message' => __('http-statuses.500'),
+                'message' => __('responses.index.failed', ['resource' => __('resources.following')]),
                 'error' => config('app.debug') ? $th->getMessage() : null,
             ], 500);
         }
@@ -262,12 +262,12 @@ class UserController extends Controller implements HasMiddleware
             $user->followers()->attach(Auth::id());
 
             return response()->json([
-                'message' => __('http-statuses.200'),
+                'message' => __('responses.follow.success', ['resource' => __('resources.user')]),
                 'data' => $user,
             ]);
         } catch (\Throwable $th) {
             return response()->json([
-                'message' => __('http-statuses.500'),
+                'message' => __('responses.follow.failed', ['resource' => __('resources.user')]),
                 'error' => config('app.debug') ? $th->getMessage() : null,
             ], 500);
         }
@@ -287,12 +287,12 @@ class UserController extends Controller implements HasMiddleware
             $user->followers()->detach(Auth::id());
 
             return response()->json([
-                'message' => __('http-statuses.200'),
+                'message' => __('responses.unfollow.success', ['resource' => __('resources.user')]),
                 'data' => $user,
             ]);
         } catch (\Throwable $th) {
             return response()->json([
-                'message' => __('http-statuses.500'),
+                'message' => __('responses.unfollow.failed', ['resource' => __('resources.user')]),
                 'error' => config('app.debug') ? $th->getMessage() : null,
             ], 500);
         }
@@ -316,20 +316,20 @@ class UserController extends Controller implements HasMiddleware
             if ($request->hasFile('avatar')) {
                 $avatar = $request->file('avatar');
                 $avatarName = time() . '.' . $avatar->getClientOriginalExtension();
-                $avatar->move(public_path('images'), $avatarName);
+                $avatar->storeAs('avatars', $avatarName, 'public');
 
                 $user->update([
-                    'avatar' => $avatarName,
+                    'avatar' => 'storage/avatars/' . $avatarName,
                 ]);
             }
 
             return response()->json([
-                'message' => __('http-statuses.200'),
+                'message' => __('responses.upload.success', ['resource' => __('resources.avatar')]),
                 'data' => $user,
             ]);
         } catch (\Throwable $th) {
             return response()->json([
-                'message' => __('http-statuses.500'),
+                'message' => __('responses.upload.failed', ['resource' => __('resources.avatar')]),
                 'error' => config('app.debug') ? $th->getMessage() : null,
             ], 500);
         }
@@ -351,12 +351,12 @@ class UserController extends Controller implements HasMiddleware
             ]);
 
             return response()->json([
-                'message' => __('http-statuses.200'),
+                'message' => __('responses.remove.success', ['resource' => __('resources.avatar')]),
                 'data' => $user,
             ]);
         } catch (\Throwable $th) {
             return response()->json([
-                'message' => __('http-statuses.500'),
+                'message' => __('responses.remove.failed', ['resource' => __('resources.avatar')]),
                 'error' => config('app.debug') ? $th->getMessage() : null,
             ], 500);
         }

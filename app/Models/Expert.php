@@ -62,7 +62,7 @@ class Expert extends Model
 
     public function educations()
     {
-        return $this->hasMany(ExpertEducation::class)->orderBy('start_year', 'desc');
+        return $this->hasMany(ExpertEducation::class)->orderBy('graduation_year', 'desc');
     }
 
     public function experiences()
