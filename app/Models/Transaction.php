@@ -8,7 +8,6 @@ class Transaction extends Model
 {
     use HasFactory;
 
-    protected $table = 'transactions';
     protected $fillable = [
         'user_id',
         'transaction_number',
@@ -22,7 +21,7 @@ class Transaction extends Model
         'paid_at' => 'datetime',
         'cancelled_at' => 'datetime',
     ];
-
+    protected $with = ['user', 'items'];
     public function user()
     {
         return $this->belongsTo(User::class);
