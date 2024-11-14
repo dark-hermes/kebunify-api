@@ -39,4 +39,12 @@ return [
         'success' => 'Berhasil berhenti mengikuti :resource.',
         'failed' => 'Gagal berhenti mengikuti :resource.',
     ],
+    'approve' => [
+        'success' => 'Berhasil menyetujui :resource.',
+        'failed' => 'Gagal menyetujui :resource.',
+    ],
+    'reject' => [
+        'success' => 'Berhasil menolak :resource.',
+        'failed' => 'Gagal menolak :resource.',
+    ],
 ];
