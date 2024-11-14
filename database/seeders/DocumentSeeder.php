@@ -18,6 +18,7 @@ class DocumentSeeder extends Seeder
             $user->documents()->create([
                 'role_applied' => 'expert',
                 'document_path' => 'https://api.kebunify.live/storage/documents/1731510655_DSA.pdf',
+                'created_at' => now()->subDays(rand(1, 30)),
             ]);
         }
 
@@ -26,6 +27,7 @@ class DocumentSeeder extends Seeder
             $user->documents()->create([
                 'role_applied' => 'seller',
                 'document_path' => 'https://api.kebunify.live/storage/documents/1731510655_DSA.pdf',
+                'created_at' => now()->subDays(rand(1, 30)),
             ]);
         }
     }

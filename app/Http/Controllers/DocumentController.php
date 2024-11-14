@@ -24,7 +24,6 @@ class DocumentController extends Controller
 
         try {
             if ($request->hasFile('document') && $request->file('document')->isValid()) {
-                // $documentPath = $request->file('document')->store('documents');
                 $document = $request->file('document');
                 $documentName = time() . '_' . $document->getClientOriginalName();
                 $document->storeAs('documents', $documentName, 'public');
@@ -117,9 +116,15 @@ class DocumentController extends Controller
         $status = strtoupper($request->query('status'));
         $limit = $request->query('limit') ?? 10;
         $search = $request->query('search');
+        $sort = $request->query('sort') ?? '-created_at';
 
-        $role = $role === 'seller' || $role === 'expert' ? $role : null;
-        $status = $status === 'PENDING' || $status === 'APPROVED' || $status === 'REJECTED' ? $status : null;
+        $role = in_array($role, ['seller', 'expert']) ? $role : null;
+        $status = in_array($status, ['PENDING', 'APPROVED', 'REJECTED']) ? $status : null;
+
+        // Determine sort direction and column
+        $sortDirection = $sort[0] === '-' ? 'desc' : 'asc';
+        $sort = ltrim($sort, '-');
+        $isSortRelation = strpos($sort, '.') !== false;
 
         try {
             $applications = Document::query()
@@ -134,7 +139,18 @@ class DocumentController extends Controller
                         ->orWhere('status', 'like', '%' . $search . '%')
                         ->orWhereRelation('user', 'name', 'like', '%' . $search . '%');
                 })
+                ->when($isSortRelation, function ($query) use ($sort, $sortDirection) {
+                    // Extract relation and column if sorting on a related model
+                    [$relation, $column] = explode('.', $sort);
+                    return $query->join('users', 'documents.user_id', '=', 'users.id')
+                        ->orderBy("users.$column", $sortDirection);
+                }, function ($query) use ($sort, $sortDirection) {
+                    // Default order on the main model column
+                    return $query->orderBy($sort, $sortDirection);
+                })
+                ->with('user')
                 ->paginate($limit);
+
             return response()->json([
                 'message' => __('responses.index.success', [
                     'resource' => __('resources.application')
@@ -146,6 +162,7 @@ class DocumentController extends Controller
                 'message' => __('responses.index.failed', [
                     'resource' => __('resources.application')
                 ]),
+                'error' => config('app.debug') ? $e->getMessage() : null
             ], 500);
         }
     }
