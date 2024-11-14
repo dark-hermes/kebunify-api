@@ -23,12 +23,42 @@ class ExpertSpecializationController extends Controller
                 })
                 ->paginate($limit);
             return response()->json([
-                'message' => __('http-statuses.200'),
+                'message' => __('responses.index.success', [
+                    'resource' => __('resources.specialization')
+                ]),
                 'data' => $expertSpecializations,
             ]);
         } catch (\Throwable $th) {
             return response()->json([
-                'message' => __('http-statuses.500'),
+                'message' => __('responses.index.failed', [
+                    'resource' => __('resources.specialization')
+                ]),
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    public function list(Request $request)
+    {
+        $search = $request->query('search');
+
+        try {
+            $expertSpecializations = ExpertSpecialization::query()
+                ->when($search, function ($query, $search) {
+                    return $query->where('name', 'like', '%' . $search . '%');
+                })
+                ->get();
+            return response()->json([
+                'message' => __('responses.index.success', [
+                    'resource' => __('resources.specialization')
+                ]),
+                'data' => $expertSpecializations,
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('responses.index.failed', [
+                    'resource' => __('resources.specialization')
+                ]),
                 'error' => config('app.debug') ? $th->getMessage() : null,
             ], 500);
         }
@@ -53,12 +83,16 @@ class ExpertSpecializationController extends Controller
             });
 
             return response()->json([
-                'message' => __('http-statuses.201'),
+                'message' => __('responses.store.success', [
+                    'resource' => __('resources.specialization')
+                ]),
                 'data' => $expertSpecialization,
             ], 201);
         } catch (\Throwable $th) {
             return response()->json([
-                'message' => __('http-statuses.500'),
+                'message' => __('responses.store.failed', [
+                    'resource' => __('resources.specialization')
+                ]),
                 'error' => config('app.debug') ? $th->getMessage() : null,
             ], 500);
         }
@@ -79,12 +113,16 @@ class ExpertSpecializationController extends Controller
             }
 
             return response()->json([
-                'message' => __('http-statuses.200'),
+                'message' => __('responses.show.success', [
+                    'resource' => __('resources.specialization')
+                ]),
                 'data' => $expertSpecialization,
             ]);
         } catch (\Throwable $th) {
             return response()->json([
-                'message' => __('http-statuses.500'),
+                'message' => __('responses.show.failed', [
+                    'resource' => __('resources.specialization')
+                ]),
                 'error' => config('app.debug') ? $th->getMessage() : null,
             ], 500);
         }
@@ -115,12 +153,16 @@ class ExpertSpecializationController extends Controller
             });
 
             return response()->json([
-                'message' => __('http-statuses.200'),
+                'message' => __('responses.update.success', [
+                    'resource' => __('resources.specialization')
+                ]),
                 'data' => $expertSpecialization,
             ]);
         } catch (\Throwable $th) {
             return response()->json([
-                'message' => __('http-statuses.500'),
+                'message' => __('responses.update.failed', [
+                    'resource' => __('resources.specialization')
+                ]),
                 'error' => config('app.debug') ? $th->getMessage() : null,
             ], 500);
         }
@@ -145,11 +187,15 @@ class ExpertSpecializationController extends Controller
             });
 
             return response()->json([
-                'message' => __('http-statuses.200'),
+                'message' => __('responses.destroy.success', [
+                    'resource' => __('resources.specialization')
+                ]),
             ]);
         } catch (\Throwable $th) {
             return response()->json([
-                'message' => __('http-statuses.500'),
+                'message' => __('responses.destroy.failed', [
+                    'resource' => __('resources.specialization')
+                ]),
                 'error' => config('app.debug') ? $th->getMessage() : null,
             ], 500);
         }
