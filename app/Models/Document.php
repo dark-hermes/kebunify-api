@@ -14,6 +14,8 @@ class Document extends Model
 
     protected $appends = ['document_url'];
 
+    protected $with = ['user'];
+
     public function getDocumentUrlAttribute(): ?string
     {
         if ($this->document_path) {

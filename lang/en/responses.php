@@ -39,4 +39,12 @@ return [
         'success' => 'Successfully unfollowed :resource.',
         'failed' => 'Failed to unfollow :resource.',
     ],
+    'approve' => [
+        'success' => 'Successfully approved :resource.',
+        'failed' => 'Failed to approve :resource.',
+    ],
+    'reject' => [
+        'success' => 'Successfully rejected :resource.',
+        'failed' => 'Failed to reject :resource.',
+    ],
 ];

@@ -67,40 +67,105 @@ class DocumentController extends Controller
 
     public function approveApplication(Request $request, $id)
     {
-        $application = Document::findOrFail($id);
+        try {
+            $application = Document::findOrFail($id);
 
-        if ($application->status !== 'PENDING') {
-            return response()->json(['error' => 'Forbidden'], 403);
+            if ($application->status !== 'PENDING') {
+                return response()->json(['error' => 'Forbidden'], 403);
+            }
+
+            $application->update(['status' => 'APPROVED']);
+            return response()->json([
+                'message' => __('responses.approve.success', [
+                    'resource' => __('resources.application')
+                ]),
+                'data' => $application
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to approve application'
+            ], 500);
         }
-
-        $application->update(['status' => 'APPROVED']);
-        return response()->json([
-            'message' => 'Application approved successfully',
-            'data' => $application
-        ]);
     }
 
     public function rejectApplication(Request $request, $id)
     {
-        $application = Document::findOrFail($id);
+        try {
+            $application = Document::findOrFail($id);
 
-        if ($application->status !== 'PENDING') {
-            return response()->json(['error' => 'Forbidden'], 403);
+            if ($application->status !== 'PENDING') {
+                return response()->json(['error' => 'Forbidden'], 403);
+            }
+
+            $application->update(['status' => 'REJECTED']);
+            return response()->json([
+                'message' => __('responses.reject.success', [
+                    'resource' => __('resources.application')
+                ]),
+                'data' => $application
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to reject application'
+            ], 500);
         }
-
-        $application->update(['status' => 'REJECTED']);
-        return response()->json([
-            'message' => 'Application rejected successfully',
-            'data' => $application
-        ]);
     }
 
     public function index(Request $request)
     {
-        $applications = Document::all();
-        return response()->json([
-            'message' => 'Applications fetched successfully',
-            'data' => $applications
-        ]);
+        $role = $request->query('role');
+        $status = strtoupper($request->query('status'));
+        $limit = $request->query('limit') ?? 10;
+        $search = $request->query('search');
+
+        $role = $role === 'seller' || $role === 'expert' ? $role : null;
+        $status = $status === 'PENDING' || $status === 'APPROVED' || $status === 'REJECTED' ? $status : null;
+
+        try {
+            $applications = Document::query()
+                ->when($role, function ($query, $role) {
+                    return $query->where('role_applied', $role);
+                })
+                ->when($status, function ($query, $status) {
+                    return $query->where('status', $status);
+                })
+                ->when($search, function ($query, $search) {
+                    return $query->where('role_applied', 'like', '%' . $search . '%')
+                        ->orWhere('status', 'like', '%' . $search . '%')
+                        ->orWhereRelation('user', 'name', 'like', '%' . $search . '%');
+                })
+                ->paginate($limit);
+            return response()->json([
+                'message' => __('responses.index.success', [
+                    'resource' => __('resources.application')
+                ]),
+                'data' => $applications
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => __('responses.index.failed', [
+                    'resource' => __('resources.application')
+                ]),
+            ], 500);
+        }
+    }
+
+    public function show($id)
+    {
+        try {
+            $application = Document::findOrFail($id);
+            return response()->json([
+                'message' => __('responses.show.success', [
+                    'resource' => __('resources.application')
+                ]),
+                'data' => $application
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => __('responses.show.failed', [
+                    'resource' => __('resources.application')
+                ]),
+            ], 404);
+        }
     }
 }

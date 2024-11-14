@@ -155,6 +155,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     Route::post('/apply-role', [DocumentController::class, 'applyForRole']);
     Route::get('/documents', [DocumentController::class, 'index']);
+    Route::get('/documents/{id}', [DocumentController::class, 'show']);
     Route::put('/documents/{id}/approve', [DocumentController::class, 'approveApplication']);
     Route::put('/documents/{id}/reject', [DocumentController::class, 'rejectApplication']);
 
