@@ -145,4 +145,9 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasOne(Expert::class);
     }
+
+    public function documents()
+    {
+        return $this->hasMany(Document::class);
+    }
 }

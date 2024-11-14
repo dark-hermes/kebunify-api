@@ -33,7 +33,6 @@ class DocumentController extends Controller
                     'user_id' => Auth::id(),
                     'role_applied' => $request->role_applied,
                     'document_path' => 'storage/documents/' . $documentName,
-                    'status' => 'pending',
                 ]);
 
                 Log::info('Role application submitted', [

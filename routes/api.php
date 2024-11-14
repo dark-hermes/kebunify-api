@@ -94,6 +94,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::delete('experts/{expertId}/experiences/{id}', [ExpertExperienceController::class, 'destroy']);
     Route::delete('experts/experiences/auth/{id}', [ExpertExperienceController::class, 'destroyAuth']);
 
+    Route::get('expert-specializations/list', [ExpertSpecializationController::class, 'list']);
     Route::apiResource('expert-specializations', ExpertSpecializationController::class);
 
     Route::apiResource('tags', TagsController::class);
