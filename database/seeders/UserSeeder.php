@@ -59,6 +59,6 @@ class UserSeeder extends Seeder
             $newUserUnv->assignRole($role);
         }
 
-        User::factory(10)->create();
+        User::factory(20)->create();
     }
 }
