@@ -21,7 +21,7 @@ class Transaction extends Model
         'paid_at' => 'datetime',
         'cancelled_at' => 'datetime',
     ];
-    protected $with = ['user', 'items'];
+    protected $with = ['items'];
     public function user()
     {
         return $this->belongsTo(User::class);

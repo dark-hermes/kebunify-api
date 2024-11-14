@@ -23,10 +23,10 @@ class Product extends Model
         'image_url',
         'user_id',
         'review_id',
-
     ];
 
     protected $with = ['category', 'reviews', 'user'];
+
     public function category()
     {
         return $this->belongsTo(Category::class);
@@ -39,8 +39,9 @@ class Product extends Model
 
     public function user()
     {
-        return $this->belongsTo(Seller::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
+
     // Accessor to rename `user_id` to `seller_id` in JSON response
     protected $appends = ['seller_id'];
 
