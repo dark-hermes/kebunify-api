@@ -155,10 +155,10 @@ class AuthController extends Controller
             $user = $request->user();
             $avatar = $request->file('avatar');
             $avatarName = $user->id . '_avatar' . time() . '.' . $avatar->getClientOriginalExtension();
-            $avatar->storeAs('avatars', $avatarName);
+            $avatar->storeAs('avatars', $avatarName, 'public');
 
             $user->update([
-                'avatar' => $avatarName,
+                'avatar' => '/storage/avatars/' . $avatarName,
             ]);
 
             return response()->json([
