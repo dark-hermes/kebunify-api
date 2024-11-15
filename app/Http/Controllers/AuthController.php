@@ -145,7 +145,7 @@ class AuthController extends Controller
         }
     }
 
-    public function changeAvatar(Request $request)
+    public function storeAvatar(Request $request)
     {
         $request->validate([
             'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
@@ -173,7 +173,7 @@ class AuthController extends Controller
         }
     }
 
-    public function deleteAvatar(Request $request)
+    public function removeAvatar(Request $request)
     {
         try {
             $user = $request->user();
