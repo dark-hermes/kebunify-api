@@ -167,9 +167,9 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 Route::apiResource('articles', ArticleController::class)->only(['index', 'show']);
 
 
-Route::get('/forum', [ForumController::class, 'index']); 
-Route::get('/forum/{id}', [ForumController::class, 'show']); 
 Route::get('/forum/home', [ForumController::class, 'home']); 
+Route::get('/forum/{id}', [ForumController::class, 'show']); 
+Route::get('/forum', [ForumController::class, 'index']); 
 
 
 Route::get('/forum/{forumId}/comments', [ForumCommentController::class, 'index']);
