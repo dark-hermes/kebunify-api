@@ -10,10 +10,15 @@ class ForumCommentResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'content' => $this->comment_content,
+            'content' => $this->content,
+            'author' => $this->whenLoaded('author', function () {
+                return [
+                    'id' => $this->author->id,
+                    'name' => $this->author->name,
+                ];
+            }),
             'created_at' => $this->formatted_created_at,
-        
+            'replies' => ForumCommentResource::collection($this->whenLoaded('replies')), 
         ];
     }
 }
-

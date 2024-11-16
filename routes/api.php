@@ -39,6 +39,8 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('me',     [AuthController::class, 'me'])->name('me');
     Route::put('me',     [AuthController::class, 'update'])->name('update');
     Route::put('me/password', [AuthController::class, 'changePassword'])->name('change-password');
+    Route::post('me/avatar', [AuthController::class, 'storeAvatar'])->name('upload-avatar');
+    Route::delete('me/avatar', [AuthController::class, 'removeAvatar'])->name('remove-avatar');
 
     Route::post('email/verification-notification', [VerificationEmailController::class, 'send'])->middleware('throttle:6,1')->name('verification.send');
     Route::get('email/verify', [VerificationEmailController::class, 'verify'])->name('verification.verify');
@@ -78,6 +80,8 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('/experts/leaderboard', [ExpertController::class, 'leaderboard']);
     Route::post('/experts/promote/{user_id}', [ExpertController::class, 'promote']);
     Route::put('/experts/{id}/switch-status', [ExpertController::class, 'switchStatus']);
+    Route::get('experts/auth', [ExpertController::class, 'showAuth']);
+    Route::put('experts/auth', [ExpertController::class, 'updateAuth']);
     Route::apiResource('experts', ExpertController::class);
 
     Route::get('experts/{expertId}/educations', [ExpertEducationController::class, 'index']);
@@ -98,18 +102,19 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::delete('experts/{expertId}/experiences/{id}', [ExpertExperienceController::class, 'destroy']);
     Route::delete('experts/experiences/auth/{id}', [ExpertExperienceController::class, 'destroyAuth']);
 
+    Route::get('expert-specializations/list', [ExpertSpecializationController::class, 'list']);
     Route::apiResource('expert-specializations', ExpertSpecializationController::class);
 
     // Route::apiResource('tags', TagsController::class);
 
-    // Forum and Forum Comments
     Route::post('/forum', [ForumController::class, 'store']);
-    Route::put('forum/{id}', [ForumController::class, 'update']);
-    Route::delete('forum/{id}', [ForumController::class, 'destroy']);
+    Route::put('/forum/{id}', [ForumController::class, 'update']);
+    Route::delete('/forum/{id}', [ForumController::class, 'destroy']);
+    Route::post('/forum/{id}/like', [ForumController::class, 'like']);
 
-    Route::post('forum-comments', [ForumCommentController::class, 'store']);
-    Route::put('forum-comments/{id}', [ForumCommentController::class, 'update']);
-    Route::delete('forum-comments/{id}', [ForumCommentController::class, 'destroy']);
+    Route::post('/forum-comments', [ForumCommentController::class, 'store']);
+    Route::put('/forum-comments/{id}', [ForumCommentController::class, 'update']);
+    Route::delete('/forum-comments/{id}', [ForumCommentController::class, 'destroy']);
 
 
 
@@ -132,6 +137,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('reviews/product/{product_id}', [ReviewController::class, 'store']);
     Route::put('reviews/{id}', [ReviewController::class, 'update']);
     Route::delete('reviews/{id}', [ReviewController::class, 'destroy']);
+    Route::get('reviews/{id}', [ReviewController::class, 'show']);
 
     Route::get('/products', [ProductController::class, 'index']);
     Route::get('/products/{id}', [ProductController::class, 'show']);
@@ -160,6 +166,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     Route::post('/apply-role', [DocumentController::class, 'applyForRole']);
     Route::get('/documents', [DocumentController::class, 'index']);
+    Route::get('/documents/{id}', [DocumentController::class, 'show']);
     Route::put('/documents/{id}/approve', [DocumentController::class, 'approveApplication']);
     Route::put('/documents/{id}/reject', [DocumentController::class, 'rejectApplication']);
 
@@ -170,8 +177,21 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 });
 
 Route::apiResource('articles', ArticleController::class)->only(['index', 'show']);
+<<<<<<< HEAD
 Route::apiResource('article/{articleId}/article-comments', ArticleCommentController::class)->only(['index', 'show']);
 Route::get('/forum', [ForumController::class, 'index']);
-Route::get('/forum/{id}', [ForumController::class, 'show']);
+=======
 
+
+Route::get('/forum/home', [ForumController::class, 'home']);
+>>>>>>> 5a57fca0672d29636a0420a0e499ff8f8a94cb73
+Route::get('/forum/{id}', [ForumController::class, 'show']);
+Route::get('/forum', [ForumController::class, 'index']);
+
+<<<<<<< HEAD
 Route::get('forum/{forumId}/comments', [ForumCommentController::class, 'index']);
+=======
+
+Route::get('/forum/{forumId}/comments', [ForumCommentController::class, 'index']);
+
+>>>>>>> 5a57fca0672d29636a0420a0e499ff8f8a94cb73

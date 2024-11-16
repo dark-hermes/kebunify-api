@@ -14,48 +14,114 @@ use Exception;
 class TransactionController extends Controller
 {
     public function index(Request $request)
-    {
-        try {
-            $transaction = Transaction::where('transaction_number', 'like', "%{$request->search}%")
-                ->orWhere('status', 'like', "%{$request->search}%")
-                ->orWhere('payment_status', 'like', "%{$request->search}%")
-                ->orderBy('created_at', 'desc')
-                ->paginate($request->limit ?? 10);
-
-            return response()->json([
-                'message' => 'Transactions retrieved successfully',
-                'data' => $transaction->load('items.product')
-            ]);
-        } catch (Exception $e) {
-            return response()->json(['message' => 'Failed to retrieve transactions', 'error' => $e->getMessage()], 400);
-        }
-    }
-
-    public function show($id)
-    {
-        try {
-            $transaction = Transaction::findOrFail($id);
-            return response()->json([
-                'message' => 'Transaction retrieved successfully',
-                'data' => $transaction->load('items.product')
-            ]);
-        } catch (Exception $e) {
-            return response()->json(['message' => 'Failed to retrieve transaction', 'error' => $e->getMessage()], 400);
-        }
-    }
-
-    public function store(Request $request)
-    {
-        $request->validate([
-            'items' => 'required|array|min:1',
-            'items.*.product_id' => 'required|exists:products,id',
-            'items.*.quantity' => 'required|integer|min:1',
-            'notes' => 'nullable|string|max:500'
+{
+    try {
+        $query = Transaction::with([
+            'items.product.category',
+            'items.product.reviews.user.roles',
+            'items.product.user',
+            'user'
         ]);
 
-        try {
-            $totalAmount = 0;
-            $items = [];
+        // Filter by authenticated user
+        if ($request->filled('user_id')) {
+            $query->where('user_id', $request->user_id);
+        }
+
+        // Search filter
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('transaction_number', 'like', "%{$search}%")
+                  ->orWhere('status', 'like', "%{$search}%")
+                  ->orWhere('payment_status', 'like', "%{$search}%")
+                  ->orWhereHas('user', function ($query) use ($search) {
+                      $query->where('name', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // Status filter - validate allowed values 
+        if ($request->filled('status')) {
+            $allowedStatuses = ['pending', 'processing', 'completed', 'cancelled'];
+            $statuses = array_intersect(explode(',', $request->status), $allowedStatuses);
+            $query->whereIn('status', $statuses);
+        }
+
+        // Payment status filter - validate allowed values
+        if ($request->filled('payment_status')) {
+            $allowedPaymentStatuses = ['unpaid', 'paid', 'failed', 'refunded'];
+            $paymentStatuses = array_intersect(explode(',', $request->payment_status), $allowedPaymentStatuses);
+            $query->whereIn('payment_status', $paymentStatuses);
+        }
+
+        $perPage = min($request->limit ?? 10, 100);
+        $transactions = $query->orderBy('created_at', 'desc')
+                            ->paginate($perPage);
+
+        return response()->json([
+            'message' => 'Transactions retrieved successfully',
+            'data' => $transactions
+        ]);
+    } catch (Exception $e) {
+        Log::error('Error fetching transactions: ' . $e->getMessage());
+        return response()->json([
+            'message' => 'Failed to retrieve transactions',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
+public function show($id)
+{
+    try {
+        $transaction = Transaction::with([
+            'items.product.category',
+            'items.product.reviews.user.roles',
+            'items.product.user',
+            'user'
+        ])->findOrFail($id);
+
+        return response()->json([
+            'message' => 'Transaction retrieved successfully',
+            'data' => $transaction
+        ]);
+    } catch (ModelNotFoundException $e) {
+        return response()->json([
+            'message' => 'Transaction not found'
+        ], 404);
+    } catch (Exception $e) {
+        Log::error('Error retrieving transaction: ' . $e->getMessage());
+        return response()->json([
+            'message' => 'Failed to retrieve transaction',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
+public function store(Request $request)
+{
+    $user = $request->user();
+
+    if (empty($user->address)) {
+        return response()->json([
+            'message' => 'Address is required to make a transaction.'
+        ], 400);
+    }
+    $request->validate([
+        'items' => 'nullable|array|min:1',
+        'items.*.product_id' => 'required_with:items|exists:products,id',
+        'items.*.quantity' => 'required_with:items|integer|min:1',
+        'notes' => 'nullable|string|max:500'
+    ]);
+
+    try {
+        $totalAmount = 0;
+        $items = [];
+
+        if ($request->filled('items')) {
+            // Direct purchase
             foreach ($request->items as $item) {
                 $product = Product::lockForUpdate()->find($item['product_id']);
                 if (!$product) {
@@ -76,36 +142,62 @@ class TransactionController extends Controller
                     'subtotal' => $subtotal
                 ];
             }
+        } else {
+            // Purchase from cart
+            $cart = Cart::with('items.product')->where('user_id', Auth::id())->firstOrFail();
 
-            $transaction = Transaction::create([
-                'user_id' => Auth::id(),
-                'transaction_number' => 'TRX-' . Str::random(10),
-                'total_amount' => $totalAmount,
-                'status' => 'pending',
-                'payment_status' => 'unpaid',
-                'notes' => $request->notes
+            foreach ($cart->items as $cartItem) {
+                $product = $cartItem->product;
+                if ($product->stock < $cartItem->quantity) {
+                    throw new Exception("Insufficient stock for product: {$product->name}");
+                }
+
+                $subtotal = $product->price * $cartItem->quantity;
+                $totalAmount += $subtotal;
+
+                $items[] = [
+                    'product' => $product,
+                    'quantity' => $cartItem->quantity,
+                    'price' => $product->price,
+                    'subtotal' => $subtotal
+                ];
+            }
+        }
+
+        $transaction = Transaction::create([
+            'user_id' => Auth::id(),
+            'transaction_number' => 'TRX-' . Str::random(10),
+            'total_amount' => $totalAmount,
+            'status' => 'pending',
+            'payment_status' => 'unpaid',
+            'notes' => $request->notes
+        ]);
+
+        foreach ($items as $item) {
+            TransactionItem::create([
+                'transaction_id' => $transaction->id,
+                'product_id' => $item['product']->id,
+                'quantity' => $item['quantity'],
+                'price' => $item['price'],
+                'subtotal' => $item['subtotal']
             ]);
 
-            foreach ($items as $item) {
-                TransactionItem::create([
-                    'transaction_id' => $transaction->id,
-                    'product_id' => $item['product']->id,
-                    'quantity' => $item['quantity'],
-                    'price' => $item['price'],
-                    'subtotal' => $item['subtotal']
-                ]);
-
-                $item['product']->decrement('stock', $item['quantity']);
-            }
-
-            return response()->json([
-                'message' => 'Transaction created successfully',
-                'data' => $transaction->load('items.product')
-            ], 201);
-        } catch (Exception $e) {
-            return response()->json(['message' => 'Transaction failed', 'error' => $e->getMessage()], 400);
+            $item['product']->decrement('stock', $item['quantity']);
         }
+
+        // Clear the cart after transaction
+        if (!$request->filled('items')) {
+            $cart->items()->delete();
+        }
+
+        return response()->json([
+            'message' => 'Transaction created successfully',
+            'data' => $transaction->load('items.product')
+        ], 201);
+    } catch (Exception $e) {
+        return response()->json(['message' => 'Transaction failed', 'error' => $e->getMessage()], 400);
     }
+}
 
     public function updateStatus(Request $request, Transaction $transaction)
     {

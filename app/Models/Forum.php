@@ -15,9 +15,10 @@ class Forum extends Model
 
     protected $fillable = [
         'title',
-        'tags',
-        'author'
+        'author',
+        'likes',
     ];
+
 
     public function getFormattedCreatedAtAttribute()
     {
@@ -29,11 +30,13 @@ class Forum extends Model
         return $this->belongsTo(User::class, 'author', 'id');
     }
 
+
     public function tags()
     {
         return $this->belongsToMany(Tag::class, 'forum_tag');
     }
-    
+
+
     public function comments()
     {
         return $this->hasMany(ForumComment::class, 'forum_id');
