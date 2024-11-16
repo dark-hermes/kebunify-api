@@ -20,7 +20,7 @@ class ForumCommentController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'comment_content' => 'required|string|max:500',
+            'content' => 'required|string|max:500',
             'forum_id' => 'required|exists:forum,id',
             'parent_id' => 'nullable|exists:forum_comment,id',
         ]);
@@ -33,7 +33,7 @@ class ForumCommentController extends Controller
         }
 
         $comment = ForumComment::create([
-            'comment_content' => $validated['comment_content'],
+            'content' => $validated['content'],
             'forum_id' => $validated['forum_id'],
             'user_id' => $request->user()->id,
             'parent_id' => $validated['parent_id'] ?? null,
@@ -49,7 +49,7 @@ class ForumCommentController extends Controller
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
-            'comment_content' => 'required|string|max:500'
+            'content' => 'required|string|max:500'
         ]);
 
         $comment = ForumComment::findOrFail($id);
@@ -58,7 +58,7 @@ class ForumCommentController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        $comment->comment_content = $validated['comment_content'];
+        $comment->content = $validated['content'];
         $comment->save();
 
         return response()->json([
