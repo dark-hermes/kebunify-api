@@ -35,6 +35,6 @@ class ForumComment extends Model
 
     public function replies()
     {
-        return $this->hasMany(ForumComment::class, 'parent_id');
+        return $this->hasMany(ForumComment::class, 'parent_id')->whereNotNull('parent_id');
     }
 }
