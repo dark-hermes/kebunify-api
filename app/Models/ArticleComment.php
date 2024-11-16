@@ -13,6 +13,10 @@ class ArticleComment extends Model
         'content',
     ];
 
+    protected $appends = [
+        'readable_created_at'
+    ];
+
     public function article()
     {
         return $this->belongsTo(Article::class);
@@ -32,4 +36,10 @@ class ArticleComment extends Model
     {
         return $this->hasMany(ArticleComment::class, 'parent_id');
     }
+
+    public function getReadableCreatedAtAttribute()
+    {
+        return $this->created_at->diffForHumans();
+    }
+
 }
