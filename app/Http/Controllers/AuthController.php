@@ -47,7 +47,7 @@ class AuthController extends Controller
         try {
             return response()->json([
                 'message' => __('http-statuses.200'),
-                'data' => $request->user()->load('roles')
+                'data' => $request->user()->load('roles', 'expert'),
             ]);
         } catch (\Throwable $th) {
             return response()->json([
@@ -92,6 +92,7 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $request->user()->id,
             'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string|max:255',
         ]);
 
         try {
@@ -99,6 +100,8 @@ class AuthController extends Controller
             $user->update([
                 'name' => $request->name,
                 'email' => $request->email,
+                'phone' => $request->phone,
+                'address' => $request->address,
             ]);
 
             return response()->json([
@@ -136,6 +139,7 @@ class AuthController extends Controller
 
             return response()->json([
                 'message' => __('http-statuses.200'),
+                'data' => $user->refresh()
             ]);
         } catch (\Throwable $th) {
             return response()->json([
@@ -145,7 +149,7 @@ class AuthController extends Controller
         }
     }
 
-    public function changeAvatar(Request $request)
+    public function storeAvatar(Request $request)
     {
         $request->validate([
             'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
@@ -155,10 +159,10 @@ class AuthController extends Controller
             $user = $request->user();
             $avatar = $request->file('avatar');
             $avatarName = $user->id . '_avatar' . time() . '.' . $avatar->getClientOriginalExtension();
-            $avatar->storeAs('avatars', $avatarName);
+            $avatar->storeAs('avatars', $avatarName, 'public');
 
             $user->update([
-                'avatar' => $avatarName,
+                'avatar' => '/storage/avatars/' . $avatarName,
             ]);
 
             return response()->json([
@@ -173,7 +177,7 @@ class AuthController extends Controller
         }
     }
 
-    public function deleteAvatar(Request $request)
+    public function removeAvatar(Request $request)
     {
         try {
             $user = $request->user();

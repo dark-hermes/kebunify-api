@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\User;
 use App\Models\Reviews;
 use App\Models\Category;
+use App\Models\Seller;
 
 class Product extends Model
 {
@@ -22,8 +23,9 @@ class Product extends Model
         'image_url',
         'user_id',
         'review_id',
-
     ];
+
+    protected $with = ['category', 'reviews', 'user'];
 
     public function category()
     {
@@ -37,7 +39,15 @@ class Product extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    // Accessor to rename `user_id` to `seller_id` in JSON response
+    protected $appends = ['seller_id'];
+
+    public function getSellerIdAttribute()
+    {
+        return $this->attributes['user_id'];
     }
 
     public function transactions()

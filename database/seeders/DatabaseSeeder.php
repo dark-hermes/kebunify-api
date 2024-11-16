@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             ExpertSpecializationSeeder::class,
             ExpertSeeder::class,
+            DocumentSeeder::class,
             TagSeeder::class,
             ArticleSeeder::class,
             CategorySeeder::class,

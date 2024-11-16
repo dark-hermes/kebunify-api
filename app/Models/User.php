@@ -28,6 +28,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'avatar',
         'phone',
         'is_active',
+        'address',
     ];
 
     /**
@@ -144,5 +145,10 @@ class User extends Authenticatable implements MustVerifyEmail
     public function expert()
     {
         return $this->hasOne(Expert::class);
+    }
+
+    public function documents()
+    {
+        return $this->hasMany(Document::class);
     }
 }

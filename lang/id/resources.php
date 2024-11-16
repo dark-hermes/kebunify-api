@@ -13,6 +13,6 @@ return [
     'consultation' => 'Konsultasi',
     'review' => 'Ulasan',
     'transaction' => 'Transaksi',
-    'application' => 'Aplikasi',
+    'application' => 'Lamaran',
     'admin' => 'Admin',
 ];

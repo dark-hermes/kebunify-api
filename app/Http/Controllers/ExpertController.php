@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Expert;
 use App\Models\Document;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class ExpertController extends Controller
 {
@@ -149,6 +151,7 @@ class ExpertController extends Controller
     public function update(Request $request, string $id)
     {
         $request->validate([
+            'name' => 'required|string',
             'expert_specialization_id' => 'required|exists:expert_specializations,id',
             'start_year' => 'required|integer|min:1900|max:' . now()->year,
             'consulting_fee' => 'required|numeric|min:0',
@@ -163,13 +166,19 @@ class ExpertController extends Controller
                 return response()->json(['message' => 'Expert not found'], 404);
             }
 
-            $expert->update([
-                'expert_specialization_id' => $request->expert_specialization_id,
-                'start_year' => $request->start_year,
-                'consulting_fee' => $request->consulting_fee,
-                'discount' => $request->discount,
-                'bio' => $request->bio,
-            ]);
+            DB::transaction(function () use ($request, $expert) {
+                $expert->update([
+                    'expert_specialization_id' => $request->expert_specialization_id,
+                    'start_year' => $request->start_year,
+                    'consulting_fee' => $request->consulting_fee,
+                    'discount' => $request->discount,
+                    'bio' => $request->bio,
+                ]);
+
+                $expert->user->update([
+                    'name' => $request->name,
+                ]);
+            });
 
             return response()->json([
                 'message' => 'Expert updated successfully',
@@ -225,6 +234,71 @@ class ExpertController extends Controller
                 'message' => __('http-statuses.200'),
                 'data' => $expert,
             ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('http-statuses.500'),
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    public function showAuth()
+    {
+        try {
+            $expert = Expert::where('user_id', Auth::id())
+                ->where('is_active', true)
+                ->with('user', 'specialization', 'educations', 'experiences')
+                ->first();
+
+            if (!$expert) {
+                return response()->json([
+                    'message' => __('http-statuses.404'),
+                ], 404);
+            }
+
+            return response()->json([
+                'message' => __('http-statuses.200'),
+                'data' => $expert,
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('http-statuses.404'),
+            ], 404);
+        }
+    }
+
+    public function updateAuth(Request $request)
+    {
+        $request->validate([
+            'expert_specialization_id' => 'required|exists:expert_specializations,id',
+            'start_year' => 'required|integer|min:1900|max:' . now()->year,
+            'consulting_fee' => 'required|numeric|min:0',
+            'discount' => 'required|numeric|min:0|max:100',
+            'bio' => 'nullable|string|max:512',
+        ]);
+
+        try {
+            $expert = Expert::where('user_id', Auth::id())
+                ->where('is_active', true)
+                ->with('user', 'specialization', 'educations', 'experiences')
+                ->first();
+
+            if (!$expert) {
+                return response()->json(['message' => 'Aksi tidak diizinkan'], 403);
+            }
+
+            $expert->user->update([
+                'expert_specialization_id' => $request->expert_specialization_id,
+                'start_year' => $request->start_year,
+                'consulting_fee' => $request->consulting_fee,
+                'discount' => $request->discount,
+                'bio' => $request->bio,
+            ]);
+
+            return response()->json([
+                'message' => 'Expert updated successfully',
+                'data' => $expert->refresh(),
+            ], 200);
         } catch (\Throwable $th) {
             return response()->json([
                 'message' => __('http-statuses.500'),

@@ -6,7 +6,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Review;
+use Illuminate\Support\Facades\Cache;
+use App\Models\Product;
 use App\Models\Transaction;
+use Illuminate\Support\Facades\Log;
 use Exception;
 
 class ReviewController extends Controller
@@ -21,6 +24,21 @@ class ReviewController extends Controller
             ]);
         } catch (Exception $e) {
             return response()->json(['message' => 'Failed to retrieve reviews', 'error' => $e->getMessage()], 400);
+        }
+    }
+
+    public function show($id){
+        try {
+            $review = Review::findOrFail($id);
+            return response()->json([
+                'message' => 'Review retrieved successfully',
+                'data' => $review
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Failed to retrieve review',
+                'error' => $e->getMessage()
+            ], 400);
         }
     }
 
