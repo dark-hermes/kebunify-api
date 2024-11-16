@@ -10,7 +10,7 @@ class ForumCommentResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'content' => $this->comment_content,
+            'content' => $this->content,
             'author' => $this->whenLoaded('author', function () {
                 return [
                     'id' => $this->author->id,

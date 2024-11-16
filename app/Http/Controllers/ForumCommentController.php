@@ -22,13 +22,14 @@ class ForumCommentController extends Controller
         $validated = $request->validate([
             'content' => 'required|string|max:500',
             'forum_id' => 'required|exists:forum,id',
-            'parent_id' => 'nullable|exists:forum_comment,id',
+            'parent_id' => 'nullable|exists:forum_comments,id', 
         ]);
+        
 
         if (!empty($validated['parent_id'])) {
             $parentComment = ForumComment::find($validated['parent_id']);
             if ($parentComment->parent_id !== null) {
-                return response()->json(['message' => 'Replies can only reference main comments'], 400);
+                return response()->json(['message' => 'Balasan hanya bisa mereferensikan komentar awal'], 400);
             }
         }
 

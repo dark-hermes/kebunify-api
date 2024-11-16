@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('forum_comments', function (Blueprint $table) {
             $table->id();
-            $table->text('content')->nullable(); 
+            $table->text('content')->nullable();
             $table->unsignedBigInteger('forum_id');
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('parent_id')->nullable();
@@ -51,6 +51,6 @@ return new class extends Migration
             $table->dropForeign(['parent_id']);
         });
 
-        Schema::dropIfExists('forum_comments'); 
+        Schema::dropIfExists('forum_comments');
     }
 };

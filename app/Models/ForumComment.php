@@ -10,7 +10,7 @@ class ForumComment extends Model
 {
     use HasFactory;
 
-    protected $table = 'forum_comment';
+    protected $table = 'forum_comments';
 
     protected $fillable = [
         'forum_id',
