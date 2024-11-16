@@ -11,17 +11,20 @@ use Illuminate\Http\Request;
 
 class ForumController extends Controller
 {
-
-    public function index($forumId)
+    public function index(Request $request, $forumId = null)
     {
-        $comments = ForumComment::where('forum_id', $forumId)
-            ->whereNull('parent_id') 
-            ->with(['author:id,name', 'replies.author:id,name']) 
-            ->get();
+        if ($forumId) {
+            $comments = ForumComment::where('forum_id', $forumId)
+                ->whereNull('parent_id')
+                ->with(['author:id,name', 'replies.author:id,name'])
+                ->get();
 
-        return ForumCommentResource::collection($comments);
+            return ForumCommentResource::collection($comments);
+        }
+
+        $forums = Forum::with('writer:id,name', 'tags:id,name')->get();
+        return ForumListResource::collection($forums);
     }
-
 
     public function show($id)
     {
@@ -31,6 +34,7 @@ class ForumController extends Controller
 
     public function store(Request $request)
     {
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'tags' => 'nullable|array',
@@ -78,7 +82,11 @@ class ForumController extends Controller
 
     public function destroy(Request $request, $id)
     {
-        $forum = Forum::findOrFail($id);
+        $forum = Forum::find($id);
+
+        if (!$forum) {
+            return response()->json(['message' => 'Forum tidak ditemukan'], 404);
+        }
 
         if ($forum->author !== $request->user()->id) {
             return response()->json(['message' => 'Unauthorized'], 403);
@@ -104,17 +112,19 @@ class ForumController extends Controller
 
     public function home()
     {
-        $latestForum = Forum::orderBy('created_at', 'desc')
+        $latestForums = Forum::orderBy('created_at', 'desc')
             ->with(['writer:id,name', 'tags:id,name'])
-            ->first();
+            ->take(5)
+            ->get();
 
-        $popularForum = Forum::orderBy('likes', 'desc')
+        $popularForums = Forum::orderBy('likes', 'desc')
             ->with(['writer:id,name', 'tags:id,name'])
-            ->first();
+            ->take(5)
+            ->get();
 
         return response()->json([
-            'popular' => $popularForum ? new ForumListResource($popularForum) : null,
-            'latest' => $latestForum ? new ForumListResource($latestForum) : null,
+            'popular' => $popularForums->isNotEmpty() ? ForumListResource::collection($popularForums) : [],
+            'latest' => $latestForums->isNotEmpty() ? ForumListResource::collection($latestForums) : [],
         ]);
     }
 }
