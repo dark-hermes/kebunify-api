@@ -11,8 +11,7 @@ class ForumCommentController extends Controller
     public function index($forumId)
     {
         $comments = ForumComment::where('forum_id', $forumId)
-            ->with('author')
-            ->with('replies')
+            ->with('author:id,name', 'replies')
             ->get();
 
         return ForumCommentResource::collection($comments);
@@ -23,22 +22,29 @@ class ForumCommentController extends Controller
         $validated = $request->validate([
             'comment_content' => 'required|string|max:500',
             'forum_id' => 'required|exists:forum,id',
-            'user_id' => 'required|exists:users,id',
-            'parent_id' => 'nullable|exists:forum_comment,id'
+            'parent_id' => 'nullable|exists:forum_comment,id',
         ]);
+
+        if (!empty($validated['parent_id'])) {
+            $parentComment = ForumComment::find($validated['parent_id']);
+            if ($parentComment->parent_id !== null) {
+                return response()->json(['message' => 'Replies can only reference main comments'], 400);
+            }
+        }
 
         $comment = ForumComment::create([
             'comment_content' => $validated['comment_content'],
             'forum_id' => $validated['forum_id'],
-            'user_id' => $validated['user_id'],
-            'parent_id' => $validated['parent_id'] ?? null
+            'user_id' => $request->user()->id,
+            'parent_id' => $validated['parent_id'] ?? null,
         ]);
 
         return response()->json([
             'message' => 'Komentar berhasil ditambahkan',
-            'data' => new ForumCommentResource($comment)
+            'data' => new ForumCommentResource($comment),
         ], 201);
     }
+
 
     public function update(Request $request, $id)
     {
@@ -47,6 +53,10 @@ class ForumCommentController extends Controller
         ]);
 
         $comment = ForumComment::findOrFail($id);
+
+        if ($comment->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
 
         $comment->comment_content = $validated['comment_content'];
         $comment->save();
@@ -57,9 +67,13 @@ class ForumCommentController extends Controller
         ], 200);
     }
 
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         $comment = ForumComment::findOrFail($id);
+
+        if ($comment->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
 
         $comment->delete();
 
