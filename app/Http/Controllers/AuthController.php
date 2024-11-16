@@ -139,6 +139,7 @@ class AuthController extends Controller
 
             return response()->json([
                 'message' => __('http-statuses.200'),
+                'data' => $user->refresh()
             ]);
         } catch (\Throwable $th) {
             return response()->json([
