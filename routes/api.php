@@ -101,14 +101,14 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     Route::apiResource('tags', TagsController::class);
 
-    // Forum and Forum Comments
-    Route::post('/forum', [ForumController::class, 'store']);
-    Route::put('forum/{id}', [ForumController::class, 'update']);
-    Route::delete('forum/{id}', [ForumController::class, 'destroy']);
+    Route::post('/forum', [ForumController::class, 'store']); 
+    Route::put('/forum/{id}', [ForumController::class, 'update']); 
+    Route::delete('/forum/{id}', [ForumController::class, 'destroy']); 
+    Route::post('/forum/{id}/like', [ForumController::class, 'like']);
 
-    Route::post('forum-comments', [ForumCommentController::class, 'store']);
-    Route::put('forum-comments/{id}', [ForumCommentController::class, 'update']);
-    Route::delete('forum-comments/{id}', [ForumCommentController::class, 'destroy']);
+    Route::post('/forum-comments', [ForumCommentController::class, 'store']); 
+    Route::put('/forum-comments/{id}', [ForumCommentController::class, 'update']); 
+    Route::delete('/forum-comments/{id}', [ForumCommentController::class, 'destroy']); 
 
 
 
@@ -165,8 +165,12 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 });
 
 Route::apiResource('articles', ArticleController::class)->only(['index', 'show']);
-Route::get('/forum', [ForumController::class, 'index']);
-Route::get('/forum/{id}', [ForumController::class, 'show']);
 
-Route::get('forum/{forumId}/comments', [ForumCommentController::class, 'index']);
+
+Route::get('/forum/home', [ForumController::class, 'home']); 
+Route::get('/forum/{id}', [ForumController::class, 'show']); 
+Route::get('/forum', [ForumController::class, 'index']); 
+
+
+Route::get('/forum/{forumId}/comments', [ForumCommentController::class, 'index']);
 

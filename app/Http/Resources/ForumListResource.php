@@ -11,8 +11,15 @@ class ForumListResource extends JsonResource
         return [
             'id' => $this->id,
             'title' => $this->title,
-            'author' => $this->author,
-            'tags' => $this->tags,
+            'author' => $this->author, 
+            'tags' => $this->whenLoaded('tags', function () {
+                return $this->tags->map(function ($tag) {
+                    return [
+                        'id' => $tag->id,
+                        'name' => $tag->name,
+                    ];
+                });
+            }),
             'created_at' => $this->formatted_created_at,
         ];
     }
