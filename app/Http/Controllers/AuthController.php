@@ -47,7 +47,7 @@ class AuthController extends Controller
         try {
             return response()->json([
                 'message' => __('http-statuses.200'),
-                'data' => $request->user()->load('roles')
+                'data' => $request->user()->load('roles', 'expert'),
             ]);
         } catch (\Throwable $th) {
             return response()->json([
