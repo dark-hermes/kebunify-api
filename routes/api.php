@@ -100,7 +100,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     Route::apiResource('expert-specializations', ExpertSpecializationController::class);
 
-    Route::apiResource('tags', TagsController::class);
+    // Route::apiResource('tags', TagsController::class);
 
     // Forum and Forum Comments
     Route::post('/forum', [ForumController::class, 'store']);
@@ -118,7 +118,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('articles/{id}/upload-image', [ArticleController::class, 'uploadImage']);
 
 
-    Route::apiResource('comments', ArticleCommentController::class)->except(['index', 'show']);
+    Route::apiResource('article/{articleId}/article-comments', ArticleCommentController::class)->except(['index', 'show']);
 
     Route::get('chats/{consultation_id}', [ChatController::class, 'index']);
     Route::post('chats/{consultation_id}', [ChatController::class, 'store']);
@@ -163,19 +163,15 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::put('/documents/{id}/approve', [DocumentController::class, 'approveApplication']);
     Route::put('/documents/{id}/reject', [DocumentController::class, 'rejectApplication']);
 
-<<<<<<< HEAD
-    // Route::apiResource('articles', ArticleController::class)->only(['index', 'show']);
-=======
->>>>>>> 731c3bdfbe6ecec5c91e101a3aeba3d25d76429b
+    // Route::apiResource('article/{articleId}/article-comments', ArticleCommentController::class)->only(['index', 'show']);
 
 
-<<<<<<< HEAD
+
 });
-=======
+
 Route::apiResource('articles', ArticleController::class)->only(['index', 'show']);
+Route::apiResource('article/{articleId}/article-comments', ArticleCommentController::class)->only(['index', 'show']);
 Route::get('/forum', [ForumController::class, 'index']);
 Route::get('/forum/{id}', [ForumController::class, 'show']);
 
 Route::get('forum/{forumId}/comments', [ForumCommentController::class, 'index']);
-
->>>>>>> 731c3bdfbe6ecec5c91e101a3aeba3d25d76429b

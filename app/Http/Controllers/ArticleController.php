@@ -374,7 +374,7 @@ class ArticleController extends Controller implements HasMiddleware
         } catch (\Throwable $th) {
             return response()->json([
                 'message' => __('http-statuses.500'),
-                'error' => config('app.debug') ? $th->getMessage() : null,
+                'error' => config('app.debug') ? $th->getMessage() :    null,
             ], 500);
         }
     }
