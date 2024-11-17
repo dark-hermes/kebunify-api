@@ -11,38 +11,38 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class ForumController extends Controller
 {
-    
+
     public function index(Request $request)
     {
         try {
             $perPage = $request->query('per_page', 10);
             $search = $request->query('search');
-    
+
             $forums = Forum::query()
                 ->when($search, function ($query, $search) {
                     $query->where('title', 'like', '%' . $search . '%');
                 })
                 ->withCount('comments')
-                ->with('writer:id,name,avatar') 
+                ->with('writer:id,name,avatar')
                 ->paginate($perPage);
-    
+
             $modifiedForums = collect($forums->items())->map(function ($forum) {
-                $forum->replyCount = $forum->comments_count; 
-                unset($forum->comments_count); 
+                $forum->replyCount = $forum->comments_count;
+                unset($forum->comments_count);
                 return $forum;
             });
-    
+
             $paginatedResult = new LengthAwarePaginator(
                 $modifiedForums,
-                $forums->total(), 
-                $forums->perPage(), 
-                $forums->currentPage(), 
+                $forums->total(),
+                $forums->perPage(),
+                $forums->currentPage(),
                 [
                     'path' => $request->url(),
                     'query' => $request->query(),
                 ]
             );
-    
+
             return response()->json([
                 'message' => __('http-statuses.200'),
                 'data' => $paginatedResult,
@@ -54,7 +54,7 @@ class ForumController extends Controller
             ], 500);
         }
     }
-    
+
 
     public function show($id)
     {
@@ -184,7 +184,33 @@ class ForumController extends Controller
         }
     }
 
+    public function getUserForums(Request $request)
+    {
+        try {
+            $perPage = $request->query('per_page', 10);
 
+            $userForums = Forum::where('user_id', Auth::id()) 
+                ->withCount('comments') 
+                ->with('writer:id,name,avatar') 
+                ->paginate($perPage);
+
+            $userForums->getCollection()->transform(function ($forum) {
+                $forum->replyCount = $forum->comments_count;
+                unset($forum->comments_count);
+                return $forum;
+            });
+
+            return response()->json([
+                'message' => __('http-statuses.200'),
+                'data' => $userForums,
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => 'Internal Server Error.',
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
+        }
+    }
 
     public function store(Request $request)
     {

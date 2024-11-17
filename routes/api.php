@@ -105,10 +105,11 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     Route::apiResource('tags', TagsController::class);
 
-    Route::post('/forums', [ForumController::class, 'store']);
-    Route::put('/forums/{id}', [ForumController::class, 'update']);
-    Route::delete('/forums/{id}', [ForumController::class, 'destroy']);
-    Route::post('/forums/{id}/like', [ForumController::class, 'like']);
+    Route::post('/forums', [ForumController::class, 'store']); 
+    Route::put('/forums/{id}', [ForumController::class, 'update']); 
+    Route::delete('/forums/{id}', [ForumController::class, 'destroy']); 
+    Route::post('/forums/{id}/like', [ForumController::class, 'like']); 
+    Route::get('/forums/my-forums', [ForumController::class, 'getUserForums']);
 
     Route::post('/forums/{forumId}/comments', [ForumCommentController::class, 'store']);
     Route::put('/forum-comments/{id}', [ForumCommentController::class, 'update']);
