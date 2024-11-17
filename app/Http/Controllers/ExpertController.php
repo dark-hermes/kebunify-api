@@ -277,7 +277,7 @@ class ExpertController extends Controller
                 return response()->json(['message' => 'Aksi tidak diizinkan'], 403);
             }
 
-            $expert->user->update([
+            $expert->update([
                 'expert_specialization_id' => $request->expert_specialization_id,
                 'start_year' => $request->start_year,
                 'consulting_fee' => $request->consulting_fee,
