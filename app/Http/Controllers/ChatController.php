@@ -24,7 +24,10 @@ class ChatController extends Controller
                 $query->where('message', 'LIKE', "%{$search}%");
             }
             $chats = $query->get();
-            return response()->json($chats, 200);
+            return response()->json([
+                'message' => 'Chats retrieved',
+                'data' => $chats
+            ], 200);
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 500);
         }
@@ -40,7 +43,7 @@ class ChatController extends Controller
             if ($consultation->status === 'closed') {
                 return response()->json(['message' => 'Consultation is closed'], 400);
             }
-            if ($consultation->content_payment_status !== 'paid') {
+            if ($consultation->is_paid === false) {
                 return response()->json(['message' => 'Finish payment first'], 400);
             }
 
@@ -52,7 +55,10 @@ class ChatController extends Controller
                     'consultation_id' => $consultation_id,
                 ]);
             });
-            return response()->json($chat, 201);
+            return response()->json([
+                'message' => 'Chat created',
+                'data' => $chat
+            ], 201);
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 500);
         }
@@ -68,7 +74,10 @@ class ChatController extends Controller
             if (!$chat) {
                 return response()->json(['message' => 'Chat not found'], 404);
             }
-            return response()->json($chat, 200);
+            return response()->json([
+                'message' => 'Chat retrieved',
+                'data' => $chat
+            ]);
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 500);
         }
@@ -92,7 +101,10 @@ class ChatController extends Controller
                 $chat->update($request->only(['message']));
             });
 
-            return response()->json($chat, 200);
+            return response()->json([
+                'message' => 'Chat updated',
+                'data' => $chat
+            ], 200);
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 500);
         }
