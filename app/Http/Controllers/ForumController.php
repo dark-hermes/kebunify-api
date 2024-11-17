@@ -6,25 +6,46 @@ use App\Models\Forum;
 use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class ForumController extends Controller
 {
+    
     public function index(Request $request)
     {
         try {
             $perPage = $request->query('per_page', 10);
             $search = $request->query('search');
-
+    
             $forums = Forum::query()
                 ->when($search, function ($query, $search) {
                     $query->where('title', 'like', '%' . $search . '%');
                 })
-                ->with('writer:id,name', 'tags:id,name')
+                ->withCount('comments')
+                ->with('writer:id,name,avatar') 
                 ->paginate($perPage);
-
+    
+            $modifiedForums = collect($forums->items())->map(function ($forum) {
+                $forum->replyCount = $forum->comments_count; 
+                unset($forum->comments_count); 
+                return $forum;
+            });
+    
+            $paginatedResult = new LengthAwarePaginator(
+                $modifiedForums,
+                $forums->total(), 
+                $forums->perPage(), 
+                $forums->currentPage(), 
+                [
+                    'path' => $request->url(),
+                    'query' => $request->query(),
+                ]
+            );
+    
             return response()->json([
                 'message' => __('http-statuses.200'),
-                'data' => $forums,
+                'data' => $paginatedResult,
             ]);
         } catch (\Throwable $th) {
             return response()->json([
@@ -33,7 +54,7 @@ class ForumController extends Controller
             ], 500);
         }
     }
-
+    
 
     public function show($id)
     {
