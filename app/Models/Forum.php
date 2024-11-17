@@ -29,5 +29,6 @@ class Forum extends Model
     {
         return $this->hasMany(ForumComment::class, 'forum_id');
     }
+
 }
 
