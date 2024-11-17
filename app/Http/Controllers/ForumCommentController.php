@@ -2,84 +2,105 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\ForumCommentResource;
 use App\Models\ForumComment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ForumCommentController extends Controller
 {
     public function index($forumId)
     {
-        $comments = ForumComment::where('forum_id', $forumId)
-            ->with('author:id,name', 'replies')
-            ->get();
+        try {
+            $comments = ForumComment::where('forum_id', $forumId)
+                ->whereNull('parent_id')
+                ->with(['replies', 'user:id,name'])
+                ->get();
 
-        return ForumCommentResource::collection($comments);
-    }
-
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'content' => 'required|string|max:500',
-            'forum_id' => 'required|exists:forum,id',
-            'parent_id' => 'nullable|exists:forum_comments,id', 
-        ]);
-        
-
-        if (!empty($validated['parent_id'])) {
-            $parentComment = ForumComment::find($validated['parent_id']);
-            if ($parentComment->parent_id !== null) {
-                return response()->json(['message' => 'Balasan hanya bisa mereferensikan komentar awal'], 400);
-            }
+            return response()->json([
+                'message' => __('http-statuses.200'),
+                'data' => $comments,
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('http-statuses.500'),
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
         }
-
-        $comment = ForumComment::create([
-            'content' => $validated['content'],
-            'forum_id' => $validated['forum_id'],
-            'user_id' => $request->user()->id,
-            'parent_id' => $validated['parent_id'] ?? null,
-        ]);
-
-        return response()->json([
-            'message' => 'Komentar berhasil ditambahkan',
-            'data' => new ForumCommentResource($comment),
-        ], 201);
     }
 
+    public function store(Request $request, $forumId)
+    {
+        $request->validate([
+            'content' => 'required|string',
+            'parent_id' => 'nullable|exists:forum_comments,id',
+        ]);
+
+        try {
+            $comment = ForumComment::create([
+                'forum_id' => $forumId,
+                'user_id' => Auth::id(),
+                'content' => $request->content,
+                'parent_id' => $request->parent_id,
+            ]);
+
+            return response()->json([
+                'message' => __('http-statuses.201'),
+                'data' => $comment->load('user:id,name', 'replies'),
+            ], 201);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('http-statuses.500'),
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
+        }
+    }
 
     public function update(Request $request, $id)
     {
-        $validated = $request->validate([
-            'content' => 'required|string|max:500'
+        $request->validate([
+            'content' => 'required|string',
         ]);
 
-        $comment = ForumComment::findOrFail($id);
+        try {
+            $comment = ForumComment::findOrFail($id);
 
-        if ($comment->user_id !== $request->user()->id) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+            if ($comment->user_id !== Auth::id()) {
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
+
+            $comment->update(['content' => $request->content]);
+
+            return response()->json([
+                'message' => __('http-statuses.200'),
+                'data' => $comment,
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('http-statuses.500'),
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
         }
-
-        $comment->content = $validated['content'];
-        $comment->save();
-
-        return response()->json([
-            'message' => 'Komentar berhasil diperbarui',
-            'data' => new ForumCommentResource($comment)
-        ], 200);
     }
 
-    public function destroy(Request $request, $id)
+    public function destroy($id)
     {
-        $comment = ForumComment::findOrFail($id);
+        try {
+            $comment = ForumComment::findOrFail($id);
 
-        if ($comment->user_id !== $request->user()->id) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+            if ($comment->user_id !== Auth::id()) {
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
+
+            $comment->delete();
+
+            return response()->json([
+                'message' => __('http-statuses.200'),
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('http-statuses.500'),
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
         }
-
-        $comment->delete();
-
-        return response()->json([
-            'message' => 'Komentar berhasil dihapus'
-        ], 200);
     }
 }
