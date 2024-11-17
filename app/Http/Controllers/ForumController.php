@@ -2,129 +2,259 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\ForumCommentResource;
-use App\Http\Resources\ForumDetailResource;
-use App\Http\Resources\ForumListResource;
 use App\Models\Forum;
-use App\Models\ForumComment;
+use App\Models\Tag;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ForumController extends Controller
 {
-    public function index(Request $request, $forumId = null)
+    public function index(Request $request)
     {
-        if ($forumId) {
-            $comments = ForumComment::where('forum_id', $forumId)
-                ->whereNull('parent_id')
-                ->with(['author:id,name', 'replies.author:id,name'])
-                ->get();
+        try {
+            $perPage = $request->query('per_page', 10);
+            $search = $request->query('search');
 
-            return ForumCommentResource::collection($comments);
+            $forums = Forum::query()
+                ->when($search, function ($query, $search) {
+                    $query->where('title', 'like', '%' . $search . '%');
+                })
+                ->with('writer:id,name', 'tags:id,name')
+                ->paginate($perPage);
+
+            return response()->json([
+                'message' => __('http-statuses.200'),
+                'data' => $forums,
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => 'Internal Server Error.',
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
         }
-
-        $forums = Forum::with('writer:id,name', 'tags:id,name')->get();
-        return ForumListResource::collection($forums);
     }
+
 
     public function show($id)
     {
-        $forum = Forum::with('writer:id,name')->findOrFail($id);
-        return new ForumDetailResource($forum);
+        try {
+            $forum = Forum::with('tags:id,name', 'writer:id,name', 'comments.author:id,name')
+                ->findOrFail($id);
+
+            return response()->json([
+                'message' => __('http-statuses.200'),
+                'data' => $forum,
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('http-statuses.404'),
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 404);
+        }
     }
+
+    public function filterByTag($tagId)
+    {
+        try {
+            $forums = Forum::whereHas('tags', function ($query) use ($tagId) {
+                $query->where('tags.id', $tagId);
+            })->with('tags:id,name', 'writer:id,name')->get();
+
+            return response()->json([
+                'message' => __('http-statuses.200'),
+                'data' => $forums,
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => 'Kesalahan dari dalam server',
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
+        }
+    }
+
+
+    public function home()
+    {
+        try {
+            $latestForum = Forum::orderBy('created_at', 'desc')
+                ->with('tags:id,name', 'writer:id,name')
+                ->first();
+
+            $popularForum = Forum::orderBy('likes', 'desc')
+                ->with('tags:id,name', 'writer:id,name')
+                ->first();
+
+            return response()->json([
+                'message' => __('http-statuses.200'),
+                'data' => [
+                    'latest' => $latestForum,
+                    'popular' => $popularForum,
+                ],
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('http-statuses.500'),
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    public function listLatest()
+    {
+        try {
+            $forums = Forum::orderBy('created_at', 'desc')
+                ->with('tags:id,name', 'writer:id,name')
+                ->get();
+
+            return response()->json([
+                'message' => __('http-statuses.200'),
+                'data' => $forums,
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('http-statuses.500'),
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    public function listPopular()
+    {
+        try {
+            $forums = Forum::orderBy('likes', 'desc')
+                ->with('tags:id,name', 'writer:id,name')
+                ->get();
+
+            return response()->json([
+                'message' => __('http-statuses.200'),
+                'data' => $forums,
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('http-statuses.500'),
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    public function like($id)
+    {
+        try {
+            $forum = Forum::findOrFail($id);
+
+            if (!Auth::check()) {
+                return response()->json(['message' => 'Unauthorized'], 401);
+            }
+
+            $forum->increment('likes');
+
+            return response()->json([
+                'message' => 'Forum successfully liked.',
+                'data' => [
+                    'id' => $forum->id,
+                    'likes' => $forum->likes,
+                ],
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => 'Internal Server Error.',
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
+        }
+    }
+
+
 
     public function store(Request $request)
     {
-
-        $validated = $request->validate([
+        $request->validate([
             'title' => 'required|string|max:255',
             'tags' => 'nullable|array',
             'tags.*' => 'exists:tags,id',
         ]);
 
-        $forum = Forum::create([
-            'title' => $validated['title'],
-            'author' => $request->user()->id,
-        ]);
+        try {
+            $forum = Forum::create([
+                'title' => $request->title,
+                'user_id' => Auth::id(),
+            ]);
 
-        if (!empty($validated['tags'])) {
-            $forum->tags()->attach($validated['tags']);
+            if ($request->has('tags')) {
+                $forum->tags()->attach($request->tags);
+            }
+
+            return response()->json([
+                'message' => 'Forum created successfully.',
+                'data' => $forum->load('tags:id,name'),
+            ], 201);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => 'Internal Server Error.',
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
         }
-
-        return new ForumDetailResource($forum->load('writer:id,name', 'tags', 'comments'));
     }
+
+
 
     public function update(Request $request, $id)
     {
-        $validated = $request->validate([
+        $request->validate([
             'title' => 'sometimes|string|max:255',
             'tags' => 'nullable|array',
-            'tags.*' => 'exists:tags,id'
+            'tags.*' => 'exists:tags,id',
         ]);
 
-        $forum = Forum::findOrFail($id);
+        try {
+            $forum = Forum::findOrFail($id);
 
-        if ($forum->author !== $request->user()->id) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+            if ($forum->user_id !== Auth::id()) {
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
+
+            if ($request->has('title')) {
+                $forum->title = $request->title;
+            }
+
+            if ($request->has('tags')) {
+                $forum->tags()->sync($request->tags);
+            }
+
+            $forum->save();
+
+            return response()->json([
+                'message' => 'Forum updated successfully.',
+                'data' => $forum->load('tags:id,name'),
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => 'Internal Server Error.',
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
         }
-
-        if (isset($validated['title'])) {
-            $forum->title = $validated['title'];
-        }
-
-        $forum->save();
-
-        if (isset($validated['tags'])) {
-            $forum->tags()->sync($validated['tags']);
-        }
-
-        return new ForumDetailResource($forum->load('writer', 'tags', 'comments'));
     }
+
 
     public function destroy(Request $request, $id)
     {
-        $forum = Forum::find($id);
+        try {
+            $forum = Forum::findOrFail($id);
 
-        if (!$forum) {
-            return response()->json(['message' => 'Forum tidak ditemukan'], 404);
+
+            if ($forum->user_id !== Auth::id()) {
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
+
+            $forum->delete(); // Hapus forum
+
+            return response()->json([
+                'message' => 'Forum deleted successfully.',
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => 'Internal Server Error.',
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
         }
-
-        if ($forum->author !== $request->user()->id) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
-
-        $forum->delete();
-
-        return response()->json([
-            'message' => 'Forum berhasil dihapus'
-        ], 200);
-    }
-
-    public function like($id)
-    {
-        $forum = Forum::findOrFail($id);
-        $forum->increment('likes');
-
-        return response()->json([
-            'message' => 'Forum berhasil kamu sukai',
-            'likes' => $forum->likes,
-        ]);
-    }
-
-    public function home()
-    {
-        $latestForums = Forum::orderBy('created_at', 'desc')
-            ->with(['writer:id,name', 'tags:id,name'])
-            ->take(5)
-            ->get();
-
-        $popularForums = Forum::orderBy('likes', 'desc')
-            ->with(['writer:id,name', 'tags:id,name'])
-            ->take(5)
-            ->get();
-
-        return response()->json([
-            'popular' => $popularForums->isNotEmpty() ? ForumListResource::collection($popularForums) : [],
-            'latest' => $latestForums->isNotEmpty() ? ForumListResource::collection($latestForums) : [],
-        ]);
     }
 }
