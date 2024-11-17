@@ -78,6 +78,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::put('/experts/{id}/switch-status', [ExpertController::class, 'switchStatus']);
     Route::get('experts/auth', [ExpertController::class, 'showAuth']);
     Route::put('experts/auth', [ExpertController::class, 'updateAuth']);
+    Route::get('experts/list', [ExpertController::class, 'list']);
     Route::apiResource('experts', ExpertController::class);
 
     Route::get('experts/{expertId}/educations', [ExpertEducationController::class, 'index']);
