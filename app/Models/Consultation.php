@@ -17,10 +17,17 @@ class Consultation extends Model
         'topic',
         'status',
         'description',
-        'content_status_payment',
         'user_id',
         'expert_id',
+        'status'
     ];
+
+    protected $with = ['user', 'expert', 'transaction'];
+
+    public function getIsPaidAttribute()
+    {
+        return $this->transaction->payment_date->payment_date !== null;
+    }
 
     public function user()
     {
@@ -35,5 +42,10 @@ class Consultation extends Model
     public function chats()
     {
         return $this->hasMany(Chat::class);
+    }
+
+    public function transaction()
+    {
+        return $this->hasOne(ConsultationTransaction::class);
     }
 }
