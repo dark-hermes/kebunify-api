@@ -267,6 +267,29 @@ class ExpertController extends Controller
         }
     }
 
+    public function getExpertId()
+    {
+        try {
+            $expert = Expert::where('user_id', Auth::id())
+                ->get();
+
+            if (!$expert) {
+                return response()->json([
+                    'message' => __('http-statuses.404'),
+                ], 404);
+            }
+
+            return response()->json([
+                'message' => __('http-statuses.200'),
+                'data' => $expert,
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('http-statuses.404'),
+            ], 404);
+        }
+    }
+
     public function updateAuth(Request $request)
     {
         $request->validate([

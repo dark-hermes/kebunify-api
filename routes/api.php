@@ -81,6 +81,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('/experts/promote/{user_id}', [ExpertController::class, 'promote']);
     Route::put('/experts/{id}/switch-status', [ExpertController::class, 'switchStatus']);
     Route::get('experts/auth', [ExpertController::class, 'showAuth']);
+    Route::get('experts/auth/expertId', [ExpertController::class, 'getExpertId']);
     Route::put('experts/auth', [ExpertController::class, 'updateAuth']);
     Route::apiResource('experts', ExpertController::class);
 
@@ -121,6 +122,9 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     Route::apiResource('articles', ArticleController::class)->except(['index', 'show']);
     Route::post('articles/{id}/upload-image', [ArticleController::class, 'uploadImage']);
+    Route::get('articles/expert/{id}', [ArticleController::class, 'getArticlesByExpert']);
+    Route::put('articles/{id}/publish', [ArticleController::class, 'publish']);
+
 
 
     Route::apiResource('article/{articleId}/article-comments', ArticleCommentController::class)->except(['index', 'show']);
@@ -177,21 +181,18 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 });
 
 Route::apiResource('articles', ArticleController::class)->only(['index', 'show']);
-<<<<<<< HEAD
+
 Route::apiResource('article/{articleId}/article-comments', ArticleCommentController::class)->only(['index', 'show']);
 Route::get('/forum', [ForumController::class, 'index']);
-=======
 
 
 Route::get('/forum/home', [ForumController::class, 'home']);
->>>>>>> 5a57fca0672d29636a0420a0e499ff8f8a94cb73
+
 Route::get('/forum/{id}', [ForumController::class, 'show']);
 Route::get('/forum', [ForumController::class, 'index']);
 
-<<<<<<< HEAD
+
 Route::get('forum/{forumId}/comments', [ForumCommentController::class, 'index']);
-=======
+
 
 Route::get('/forum/{forumId}/comments', [ForumCommentController::class, 'index']);
-
->>>>>>> 5a57fca0672d29636a0420a0e499ff8f8a94cb73

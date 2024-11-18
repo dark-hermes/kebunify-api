@@ -92,6 +92,37 @@ class ArticleController extends Controller implements HasMiddleware
         }
     }
 
+    public function getArticlesByExpert(Request $request, $id) {
+
+        $search = $request->query('search');
+        $paginate = $request->query('paginate');// Mendapatkan ID expert yang sedang login
+
+        try {
+            $articles = Article::query()
+                ->where('expert_id', $id) // Menambahkan filter untuk expert yang sedang login
+                ->when($search, function ($query, $search) {
+                    return $query->where(function ($query) use ($search) {
+                        $query->where('title', 'like', '%' . $search . '%')
+                        ->orWhere('content', 'like', '%' . $search . '%');
+                    });
+                });
+
+            $articles = !$paginate
+                ? $articles->get()
+                : $articles->paginate($paginate);
+
+            return response()->json([
+                'message' => __('http-statuses.200'),
+                'data' => $articles,
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('http-statuses.500'),
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
+        }
+    }
+
     /**
      * Store a newly created resource in storage.
      */
@@ -128,60 +159,60 @@ class ArticleController extends Controller implements HasMiddleware
         // ]);
         // return response()->json(['message' =>'Article created successfully'], 200);
 
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'content' => 'required|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'is_published' => 'required|boolean',
-            'is_premium' => 'required|boolean',
-            'tags' => 'required|array',
-        ]);
+            $request->validate([
+                'title' => 'required|string|max:255',
+                'content' => 'required|string',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+                'is_published' => 'required|boolean',
+                'is_premium' => 'required|boolean',
+                'tags' => 'required|array',
+            ]);
 
-        try {
-            $article = null;
-            DB::transaction(function () use ($request, &$article) {
-                $article = Article::create([
-                    'expert_id' => Auth::user()->expert->id,
-                    'title' => $request->title,
-                    'content' => $request->content,
-                    'is_published' => $request->is_published,
-                    'is_premium' => $request->is_premium,
-                ]);
-
-                if ($request->hasFile('image')) {
-                    $image = $request->file('image');
-                    $imageName = $article->id . '_image' . time() . '.' . $image->getClientOriginalExtension();
-                    $image->storeAs('articles', $imageName, 'public');
-
-                    $article->update([
-                        'image' => 'storage/articles/' . $imageName,
+            try {
+                $article = null;
+                DB::transaction(function () use ($request, &$article) {
+                    $article = Article::create([
+                        'expert_id' => Auth::user()->expert->id,
+                        'title' => $request->title,
+                        'content' => $request->content,
+                        'is_published' => $request->is_published,
+                        'is_premium' => $request->is_premium,
                     ]);
-                }
 
-                foreach ($request->tags as $tag) {
-                    $tag = Tag::firstOrCreate(['name' => $tag]);
-                    $article->tags()->attach($tag->id);
-                }
+                    if ($request->hasFile('image')) {
+                        $image = $request->file('image');
+                        $imageName = $article->id . '_image' . time() . '.' . $image->getClientOriginalExtension();
+                        $image->storeAs('articles', $imageName, 'public');
 
-                // foreach (json_decode($request->tags, true) as $tag) {
-                //     if (!is_array($request->tags)) {
-                //         return response()->json(['message' => 'Tags must be an array'], 422);
-                //     }
-                //     $tag = Tag::firstOrCreate(['name' => $tag]);
-                //     $article->tags()->attach($tag->id);
-                // }
-            });
+                        $article->update([
+                            'image' => 'storage/articles/' . $imageName,
+                        ]);
+                    }
 
-            return response()->json([
-                'message' => __('http-statuses.201'),
-                'data' => $article,
-            ], 201);
-        } catch (\Throwable $th) {
-            return response()->json([
-                'message' => __('http-statuses.500'),
-                'error' => config('app.debug') ? $th->getMessage() : null,
-            ], 500);
-        }
+                    foreach ($request->tags as $tag) {
+                        $tag = Tag::firstOrCreate(['name' => $tag]);
+                        $article->tags()->attach($tag->id);
+                    }
+
+                    // foreach (json_decode($request->tags, true) as $tag) {
+                    //     if (!is_array($request->tags)) {
+                    //         return response()->json(['message' => 'Tags must be an array'], 422);
+                    //     }
+                    //     $tag = Tag::firstOrCreate(['name' => $tag]);
+                    //     $article->tags()->attach($tag->id);
+                    // }
+                });
+
+                return response()->json([
+                    'message' => __('http-statuses.201'),
+                    'data' => $article,
+                ], 201);
+            } catch (\Throwable $th) {
+                return response()->json([
+                    'message' => __('http-statuses.500'),
+                    'error' => config('app.debug') ? $th->getMessage() : null,
+                ], 500);
+            }
     }
 
     /**
@@ -310,11 +341,13 @@ class ArticleController extends Controller implements HasMiddleware
         try {
             $article = Article::find($id);
 
+
             if (! $article) {
                 return response()->json([
                     'message' => __('http-statuses.404'),
                 ], 404);
             }
+
 
             DB::transaction(function () use ($request, $article) {
                 $article->update([
@@ -423,6 +456,33 @@ class ArticleController extends Controller implements HasMiddleware
             return response()->json([
                 'message' => __('http-statuses.200'),
                 'data' => $tags,
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('http-statuses.500'),
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    public function publish($id)
+    {
+        try {
+            $article = Article::findOrFail($id);
+
+            if (!$article) {
+                return response()->json([
+                    'message' => __('http-statuses.404'),
+                ], 404);
+            }
+
+            $article->update([
+                'is_published' => ! $article->is_published,
+            ]);
+
+            return response()->json([
+                'message' => __('http-statuses.200'),
+                'data' => $article,
             ]);
         } catch (\Throwable $th) {
             return response()->json([
