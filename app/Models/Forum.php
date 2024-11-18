@@ -2,43 +2,33 @@
 
 namespace App\Models;
 
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Forum extends Model
 {
     use HasFactory;
 
-    protected $table = 'forum';
-
     protected $fillable = [
         'title',
-        'author',
+        'user_id', 
         'likes',
     ];
 
-
-    public function getFormattedCreatedAtAttribute()
+    public function writer()
     {
-        return Carbon::parse($this->created_at)->translatedFormat('j F');
+        return $this->belongsTo(User::class, 'user_id', 'id');
     }
-
-    public function writer(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'author', 'id');
-    }
-
 
     public function tags()
     {
-        return $this->belongsToMany(Tag::class, 'forum_tag');
+        return $this->belongsToMany(Tag::class, 'forum_tag', 'forum_id', 'tag_id');
     }
-
 
     public function comments()
     {
         return $this->hasMany(ForumComment::class, 'forum_id');
     }
+
 }
+

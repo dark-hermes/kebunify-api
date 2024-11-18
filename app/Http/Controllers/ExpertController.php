@@ -38,6 +38,36 @@ class ExpertController extends Controller
         }
     }
 
+    public function list(Request $request)
+    {
+        $search =  $request->query('search');
+        $specialization = $request->query('specialization');
+
+        try {
+            $experts = Expert::query()
+                ->where('is_active', true)
+                ->when($search, function ($query, $search) {
+                    return $query->whereRelation('user', 'name', 'like', '%' . $search . '%')
+                        ->orWhereRelation('specialization', 'name', 'like', '%' . $search . '%');
+                })
+                ->when($specialization, function ($query, $specialization) {
+                    return $query->whereRelation('specialization', 'id', $specialization);
+                })
+                ->with('user', 'specialization')
+                ->get();
+
+            return response()->json([
+                'message' => __('http-statuses.200'),
+                'data' => $experts,
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('http-statuses.500'),
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
+        }
+    }
+
     /**
      * Display the specified resource.
      */
@@ -310,7 +340,7 @@ class ExpertController extends Controller
                 return response()->json(['message' => 'Aksi tidak diizinkan'], 403);
             }
 
-            $expert->user->update([
+            $expert->update([
                 'expert_specialization_id' => $request->expert_specialization_id,
                 'start_year' => $request->start_year,
                 'consulting_fee' => $request->consulting_fee,
