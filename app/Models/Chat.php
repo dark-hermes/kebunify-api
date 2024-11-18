@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Model;
 
 class Chat extends Model
@@ -12,6 +13,16 @@ class Chat extends Model
         'user_id',
         'consultation_id',
     ];
+
+    protected $appends = ['is_me'];
+
+    protected $with = ['user'];
+
+
+    public function getIsMeAttribute()
+    {
+        return $this->user_id === Auth::id();
+    }
 
     public function user()
     {

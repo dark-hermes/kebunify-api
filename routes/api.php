@@ -76,6 +76,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::put('/consultations/{id}', [ConsultationController::class, 'update']);
     Route::put('/consultations/change-status/{id}', [ConsultationController::class, 'changeStatus']);
     Route::delete('/consultations/{id}', [ConsultationController::class, 'destroy']);
+    Route::post('consultations/{id}/transaction', [ConsultationController::class, 'storeTransaction']);
 
     Route::get('/experts/leaderboard', [ExpertController::class, 'leaderboard']);
     Route::post('/experts/promote/{user_id}', [ExpertController::class, 'promote']);
@@ -83,6 +84,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('experts/auth', [ExpertController::class, 'showAuth']);
     Route::get('experts/auth/expertId', [ExpertController::class, 'getExpertId']);
     Route::put('experts/auth', [ExpertController::class, 'updateAuth']);
+    Route::get('experts/list', [ExpertController::class, 'list']);
     Route::apiResource('experts', ExpertController::class);
 
     Route::get('experts/{expertId}/educations', [ExpertEducationController::class, 'index']);
@@ -108,17 +110,15 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     // Route::apiResource('tags', TagsController::class);
 
-    Route::post('/forum', [ForumController::class, 'store']);
-    Route::put('/forum/{id}', [ForumController::class, 'update']);
-    Route::delete('/forum/{id}', [ForumController::class, 'destroy']);
-    Route::post('/forum/{id}/like', [ForumController::class, 'like']);
+    Route::post('/forums', [ForumController::class, 'store']); 
+    Route::put('/forums/{id}', [ForumController::class, 'update']); 
+    Route::delete('/forums/{id}', [ForumController::class, 'destroy']); 
+    Route::post('/forums/{id}/like', [ForumController::class, 'like']); 
+    Route::get('/forums/my-forums', [ForumController::class, 'getUserForums']);
 
-    Route::post('/forum-comments', [ForumCommentController::class, 'store']);
+    Route::post('/forums/{forumId}/comments', [ForumCommentController::class, 'store']);
     Route::put('/forum-comments/{id}', [ForumCommentController::class, 'update']);
     Route::delete('/forum-comments/{id}', [ForumCommentController::class, 'destroy']);
-
-
-
 
     Route::apiResource('articles', ArticleController::class)->except(['index', 'show']);
     Route::post('articles/{id}/upload-image', [ArticleController::class, 'uploadImage']);
@@ -186,6 +186,7 @@ Route::apiResource('article/{articleId}/article-comments', ArticleCommentControl
 Route::get('/forum', [ForumController::class, 'index']);
 
 
+<<<<<<< HEAD
 Route::get('/forum/home', [ForumController::class, 'home']);
 
 Route::get('/forum/{id}', [ForumController::class, 'show']);
@@ -193,6 +194,15 @@ Route::get('/forum', [ForumController::class, 'index']);
 
 
 Route::get('forum/{forumId}/comments', [ForumCommentController::class, 'index']);
+=======
+Route::get('/forums', [ForumController::class, 'index']);
+Route::get('/forums/by-tag/{tagId}', [ForumController::class, 'filterByTag']);
+Route::get('/forums/home', [ForumController::class, 'home']);
+Route::get('/forums/latest', [ForumController::class, 'listLatest']);
+Route::get('/forums/popular', [ForumController::class, 'listPopular']);
+Route::get('/forums/{id}', [ForumController::class, 'show']);
+Route::get('/forums/{forumId}/comments', [ForumCommentController::class, 'index']);
+>>>>>>> a8bb0ac3e8c13d07c556b88c2df26cb704fac5e1
 
 
 Route::get('/forum/{forumId}/comments', [ForumCommentController::class, 'index']);

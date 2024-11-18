@@ -12,19 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('forum_tag', function (Blueprint $table) {
-            $table->unsignedBigInteger('forum_id');
-            $table->unsignedBigInteger('tag_id');
+            $table->id(); 
+            $table->foreignId('forum_id')
+                  ->constrained()
+                  ->onDelete('cascade')
+                  ->onUpdate('cascade'); 
+            $table->foreignId('tag_id')
+                  ->constrained()
+                  ->onDelete('cascade')
+                  ->onUpdate('cascade'); 
             $table->timestamps();
-
-            $table->foreign('forum_id')
-                ->references('id')->on('forum')
-                ->onDelete('cascade');
-
-            $table->foreign('tag_id')
-                ->references('id')->on('tags')
-                ->onDelete('cascade');
-
-            $table->primary(['forum_id', 'tag_id']); 
         });
     }
 
@@ -33,11 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('forum_tag', function (Blueprint $table) {
-            $table->dropForeign(['forum_id']);
-            $table->dropForeign(['tag_id']);
-        });
-
         Schema::dropIfExists('forum_tag');
     }
 };
