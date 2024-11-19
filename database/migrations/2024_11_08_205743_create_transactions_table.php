@@ -19,6 +19,7 @@ return new class extends Migration
             $table->enum('status', ['pending', 'processing', 'completed', 'cancelled'])->default('pending');
             $table->enum('payment_status', ['unpaid', 'paid', 'failed', 'refunded'])->default('unpaid');
             $table->text('notes')->nullable();
+            $table->text('address')->nullable();
             $table->timestamps();
         });
     }

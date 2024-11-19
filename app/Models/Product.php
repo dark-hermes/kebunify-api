@@ -20,6 +20,7 @@ class Product extends Model
         'price',
         'category_id',
         'stock',
+        'total_sales',
         'image_url',
         'user_id',
         'review_id',

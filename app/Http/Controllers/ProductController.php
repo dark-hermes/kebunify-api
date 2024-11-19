@@ -14,22 +14,50 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class ProductController extends Controller
 {
+
     public function index(Request $request)
-    {
-        try {
-            $products = Product::all();
-            return response()->json([
-                'message' => 'Products retrieved successfully',
-                'data' => $products
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Error fetching products: ' . $e->getMessage());
-            return response()->json([
-                'message' => 'Failed to fetch products',
-                'error' => $e->getMessage()
-            ], 500);
+{
+    try {
+        $perPage = $request->input('per_page', 10);
+        $query = $request->input('query'); 
+        $sortBy = $request->input('sort_by', 'id'); 
+        $sortOrder = $request->input('sort_order', 'asc');
+
+        $productsQuery = Product::query();
+
+        if ($query) {
+            $query = strtolower(trim($query));
+            $productsQuery->whereRaw('LOWER(name) LIKE ?', ["%{$query}%"])
+                ->orWhereRaw('LOWER(description) LIKE ?', ["%{$query}%"]);
         }
+
+        $validSortBy = ['id', 'price'];
+        $validSortOrder = ['asc', 'desc'];
+
+        if (!in_array($sortBy, $validSortBy)) {
+            $sortBy = 'id';
+        }
+
+        if (!in_array($sortOrder, $validSortOrder)) {
+            $sortOrder = 'asc';
+        }
+
+        $productsQuery->orderBy($sortBy, $sortOrder);
+
+        $products = $productsQuery->paginate($perPage);
+
+        return response()->json([
+            'message' => 'Products retrieved successfully',
+            'data' => $products
+        ]);
+    } catch (\Exception $e) {
+        Log::error('Error fetching products: ' . $e->getMessage());
+        return response()->json([
+            'message' => 'Failed to fetch products',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
 
     public function show($id)
     {
@@ -204,6 +232,8 @@ class ProductController extends Controller
         }
     }
 
+    
+
     public function getByCategory($category_id)
     {
         try {
@@ -223,23 +253,31 @@ class ProductController extends Controller
 
     public function search(Request $request)
     {
-        try {
-            $query = $request->query('query');
-            $products = Product::where('name', 'LIKE', "%{$query}%")
-                ->orWhere('description', 'LIKE', "%{$query}%")
-                ->get();
-            return response()->json([
-                'message' => 'Products retrieved successfully',
-                'data' => $products
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Error searching products: ' . $e->getMessage());
-            return response()->json([
-                'message' => 'Failed to search products',
-                'error' => $e->getMessage()
-            ], 500);
+        $validated = $request->validate([
+            'query' => 'required|string',
+            'per_page' => 'integer|min:1|max:100',
+        ]);
+    
+        $query = strtolower(trim($validated['query']));
+        $perPage = $validated['per_page'] ?? 10;
+    
+        $products = Product::whereRaw('LOWER(name) LIKE ?', ["%{$query}%"])
+            ->orWhereRaw('LOWER(description) LIKE ?', ["%{$query}%"])
+            ->paginate($perPage);
+    
+        if ($products->isEmpty()) {
+            Log::info("No products found for query: {$query}");
+            return response()->json(['message' => 'Product not found'], 404);
         }
+    
+        return response()->json([
+            'message' => 'Products retrieved successfully',
+            'data' => $products,
+        ]);
     }
+    
+
+    
 
     public function getRelated($id)
     {
@@ -281,6 +319,51 @@ class ProductController extends Controller
             Log::error('Error fetching product reviews: ' . $e->getMessage());
             return response()->json([
                 'message' => 'Failed to fetch reviews',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getProductsBySeller(Request $request, $sellerId)
+    {
+        try {
+            $seller = User::findOrFail($sellerId);
+
+            $query = Product::where('user_id', $sellerId);
+
+            // Filter by category
+            if ($request->filled('category_id')) {
+                $query->where('category_id', $request->category_id);
+            }
+
+            // Filter by price range
+            if ($request->filled('min_price') && $request->filled('max_price')) {
+                $query->whereBetween('price', [$request->min_price, $request->max_price]);
+            } elseif ($request->filled('min_price')) {
+                $query->where('price', '>=', $request->min_price);
+            } elseif ($request->filled('max_price')) {
+                $query->where('price', '<=', $request->max_price);
+            }
+
+            // Sort by newest
+            if ($request->filled('sort') && $request->sort == 'newest') {
+                $query->orderBy('created_at', 'desc');
+            }
+
+            $products = $query->get();
+
+            return response()->json([
+                'message' => 'Products retrieved successfully',
+                'data' => $products
+            ]);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'Seller not found'
+            ], 404);
+        } catch (\Exception $e) {
+            Log::error('Error fetching products by seller: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Failed to fetch products by seller',
                 'error' => $e->getMessage()
             ], 500);
         }

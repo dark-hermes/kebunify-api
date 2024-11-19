@@ -23,6 +23,7 @@ use App\Http\Controllers\ExpertSpecializationController;
 use App\Http\Controllers\ForumCommentController;
 use App\Http\Controllers\ForumController;
 use App\Http\Controllers\TagsController;
+use App\Http\Controllers\CartController;
 
 Route::group(['middleware' => 'guest'], function () {
     Route::post('/login',  [AuthController::class, 'login'])->name('login')->middleware('throttle:6,1');
@@ -112,6 +113,9 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::put('/forum-comments/{id}', [ForumCommentController::class, 'update']);
     Route::delete('/forum-comments/{id}', [ForumCommentController::class, 'destroy']);
 
+    Route::post('/cart/add', [CartController::class, 'addToCart']);
+    Route::get('/cart', [CartController::class, 'viewCart']);
+    Route::delete('/cart/remove/{itemId}', [CartController::class, 'removeFromCart']);
 
 
 
@@ -134,14 +138,15 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     Route::get('/products', [ProductController::class, 'index']);
     Route::get('/products/{id}', [ProductController::class, 'show']);
-    Route::get('/products/random', [ProductController::class, 'random']);
     Route::post('/products', [ProductController::class, 'store']);
     Route::put('/products/{id}', [ProductController::class, 'update']);
     Route::delete('/products/{id}', [ProductController::class, 'destroy']);
+    Route::get('/products/randoms', [ProductController::class, 'randomProducts']);
     Route::get('/categories/{category_id}/products', [ProductController::class, 'getByCategory']);
     Route::get('/products/search', [ProductController::class, 'search']);
     Route::get('/products/{id}/related', [ProductController::class, 'getRelated']);
     Route::get('/products/{id}/reviews', [ProductController::class, 'getReviews']);
+    Route::get('products/seller/{sellerId}', [ProductController::class, 'getProductsBySeller']);
 
     Route::apiResource('categories', CategoryController::class);
 
