@@ -18,31 +18,32 @@ class ExpertSeeder extends Seeder
         $experts = User::where('email', 'like', 'expert%')->get();
 
         foreach ($experts as $expert) {
-            Expert::factory()->create([
+            $createdExpert = Expert::factory()->create([
                 'user_id' => $expert->id,
                 'expert_specialization_id' => ExpertSpecialization::inRandomOrder()->first()->id,
-            ])->each(function ($expert) {
-                $expert->educations()->create([
+            ]);
+
+            $createdExpert->educations()->createMany([
+                [
                     'degree' => 'S.P.',
                     'field_of_study' => 'Pertanian',
                     'institution' => 'IPB University',
                     'graduation_year' => 2010,
-                ]);
-
-                $expert->educations()->create([
+                ],
+                [
                     'degree' => 'M.P.',
                     'field_of_study' => 'Pertanian',
                     'institution' => 'IPB University',
                     'graduation_year' => 2012,
-                ]);
+                ],
+            ]);
 
-                $expert->experiences()->create([
-                    'position' => 'Kepala Laboratorium',
-                    'company' => 'IPB University',
-                    'start_year' => 2011,
-                    'end_year' => 2015,
-                ]);
-            });
+            $createdExpert->experiences()->create([
+                'position' => 'Kepala Laboratorium',
+                'company' => 'IPB University',
+                'start_year' => 2011,
+                'end_year' => 2015,
+            ]);
         }
     }
 }

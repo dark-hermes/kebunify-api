@@ -10,6 +10,7 @@ use App\Http\Controllers\ExpertController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SellerController;
 use App\Http\Controllers\ArticleController;
+use App\Http\Controllers\ArticleCommentController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DocumentController;
@@ -23,14 +24,14 @@ use App\Http\Controllers\ExpertSpecializationController;
 use App\Http\Controllers\ForumCommentController;
 use App\Http\Controllers\ForumController;
 use App\Http\Controllers\TagsController;
-use App\Http\Controllers\CartController;
 
 Route::group(['middleware' => 'guest'], function () {
     Route::post('/login',  [AuthController::class, 'login'])->name('login')->middleware('throttle:6,1');
     Route::post('/register', [AuthController::class, 'register'])->name('register');
-
     Route::post('/email/password', [PasswordResetController::class, 'setResetLinkEmail']);
     Route::post('/email/password-reset', [PasswordResetController::class, 'reset'])->middleware('signed')->name('password.reset');
+    Route::get('tags', [ArticleController::class, 'getTags']);
+    Route::apiResource('articles', ArticleController::class)->only(['index', 'show']);
 });
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
@@ -46,6 +47,8 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     Route::get('roles/list', [RoleController::class, 'list']);
     Route::apiResource('roles', RoleController::class);
+
+    Route::apiResource('users', UserController::class);
 
     Route::name('users.')->group(function () {
         Route::get('users/export', [UserController::class, 'export'])->name('export');
@@ -73,12 +76,15 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::put('/consultations/{id}', [ConsultationController::class, 'update']);
     Route::put('/consultations/change-status/{id}', [ConsultationController::class, 'changeStatus']);
     Route::delete('/consultations/{id}', [ConsultationController::class, 'destroy']);
+    Route::post('consultations/{id}/transaction', [ConsultationController::class, 'storeTransaction']);
 
     Route::get('/experts/leaderboard', [ExpertController::class, 'leaderboard']);
     Route::post('/experts/promote/{user_id}', [ExpertController::class, 'promote']);
     Route::put('/experts/{id}/switch-status', [ExpertController::class, 'switchStatus']);
     Route::get('experts/auth', [ExpertController::class, 'showAuth']);
+    Route::get('experts/auth/expertId', [ExpertController::class, 'getExpertId']);
     Route::put('experts/auth', [ExpertController::class, 'updateAuth']);
+    Route::get('experts/list', [ExpertController::class, 'list']);
     Route::apiResource('experts', ExpertController::class);
 
     Route::get('experts/{expertId}/educations', [ExpertEducationController::class, 'index']);
@@ -102,25 +108,26 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('expert-specializations/list', [ExpertSpecializationController::class, 'list']);
     Route::apiResource('expert-specializations', ExpertSpecializationController::class);
 
-    Route::apiResource('tags', TagsController::class);
+    // Route::apiResource('tags', TagsController::class);
 
-    Route::post('/forum', [ForumController::class, 'store']);
-    Route::put('/forum/{id}', [ForumController::class, 'update']);
-    Route::delete('/forum/{id}', [ForumController::class, 'destroy']);
-    Route::post('/forum/{id}/like', [ForumController::class, 'like']);
+    Route::post('/forums', [ForumController::class, 'store']); 
+    Route::put('/forums/{id}', [ForumController::class, 'update']); 
+    Route::delete('/forums/{id}', [ForumController::class, 'destroy']); 
+    Route::post('/forums/{id}/like', [ForumController::class, 'like']); 
+    Route::get('/forums/my-forums', [ForumController::class, 'getUserForums']);
 
-    Route::post('/forum-comments', [ForumCommentController::class, 'store']);
+    Route::post('/forums/{forumId}/comments', [ForumCommentController::class, 'store']);
     Route::put('/forum-comments/{id}', [ForumCommentController::class, 'update']);
     Route::delete('/forum-comments/{id}', [ForumCommentController::class, 'destroy']);
 
-    Route::post('/cart/add', [CartController::class, 'addToCart']);
-    Route::get('/cart', [CartController::class, 'viewCart']);
-    Route::delete('/cart/remove/{itemId}', [CartController::class, 'removeFromCart']);
-
-
-
     Route::apiResource('articles', ArticleController::class)->except(['index', 'show']);
     Route::post('articles/{id}/upload-image', [ArticleController::class, 'uploadImage']);
+    Route::get('articles/expert/{id}', [ArticleController::class, 'getArticlesByExpert']);
+    Route::put('articles/{id}/publish', [ArticleController::class, 'publish']);
+
+
+
+    Route::apiResource('article/{articleId}/article-comments', ArticleCommentController::class)->except(['index', 'show']);
 
     Route::get('chats/{consultation_id}', [ChatController::class, 'index']);
     Route::post('chats/{consultation_id}', [ChatController::class, 'store']);
@@ -138,16 +145,18 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     Route::get('/products', [ProductController::class, 'index']);
     Route::get('/products/{id}', [ProductController::class, 'show']);
+    Route::get('/products/random', [ProductController::class, 'random']);
     Route::post('/products', [ProductController::class, 'store']);
     Route::put('/products/{id}', [ProductController::class, 'update']);
     Route::delete('/products/{id}', [ProductController::class, 'destroy']);
-    Route::get('/products/randoms', [ProductController::class, 'randomProducts']);
     Route::get('/categories/{category_id}/products', [ProductController::class, 'getByCategory']);
     Route::get('/products/search', [ProductController::class, 'search']);
     Route::get('/products/{id}/related', [ProductController::class, 'getRelated']);
     Route::get('/products/{id}/reviews', [ProductController::class, 'getReviews']);
-    Route::get('products/seller/{sellerId}', [ProductController::class, 'getProductsBySeller']);
 
+    Route::post('/cart/add', [CartController::class, 'addToCart']);
+    Route::get('/cart', [CartController::class, 'viewCart']);
+    Route::delete('/cart/remove/{itemId}', [CartController::class, 'removeFromCart']);
     Route::apiResource('categories', CategoryController::class);
 
     Route::get('/sellers', [SellerController::class, 'index']);
@@ -168,16 +177,33 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::put('/documents/{id}/approve', [DocumentController::class, 'approveApplication']);
     Route::put('/documents/{id}/reject', [DocumentController::class, 'rejectApplication']);
 
+    // Route::apiResource('article/{articleId}/article-comments', ArticleCommentController::class)->only(['index', 'show']);
+
+
 
 });
 
 Route::apiResource('articles', ArticleController::class)->only(['index', 'show']);
 
+Route::apiResource('article/{articleId}/article-comments', ArticleCommentController::class)->only(['index', 'show']);
+Route::get('/forum', [ForumController::class, 'index']);
+
 
 Route::get('/forum/home', [ForumController::class, 'home']);
+
 Route::get('/forum/{id}', [ForumController::class, 'show']);
 Route::get('/forum', [ForumController::class, 'index']);
 
 
-Route::get('/forum/{forumId}/comments', [ForumCommentController::class, 'index']);
+Route::get('forum/{forumId}/comments', [ForumCommentController::class, 'index']);
+Route::get('/forums', [ForumController::class, 'index']);
+Route::get('/forums/by-tag/{tagId}', [ForumController::class, 'filterByTag']);
+Route::get('/forums/home', [ForumController::class, 'home']);
+Route::get('/forums/latest', [ForumController::class, 'listLatest']);
+Route::get('/forums/popular', [ForumController::class, 'listPopular']);
+Route::get('/forums/{id}', [ForumController::class, 'show']);
+Route::get('/forums/{forumId}/comments', [ForumCommentController::class, 'index']);
 
+
+
+Route::get('/forum/{forumId}/comments', [ForumCommentController::class, 'index']);

@@ -12,10 +12,9 @@ return new class extends Migration
     {
         Schema::create('consultations', function (Blueprint $table) {
             $table->id();
-            $table->string('topic');
-            $table->text('description');
-            $table->enum('status', ['open', 'closed']);
-            $table->enum('content_payment_status', ['paid', 'unpaid', 'pending']);
+            $table->string('topic')->nullable();
+            $table->text('description')->nullable();
+            $table->enum('status', ['open', 'closed'])->default('open');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('expert_id')->constrained()->onDelete('cascade');
             $table->timestamps();
