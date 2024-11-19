@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
             SellerSeeder::class,
             TransactionSeeder::class,
             ReviewSeeder::class,
+            CartSeeder::class,
         ]);
     }
 }
