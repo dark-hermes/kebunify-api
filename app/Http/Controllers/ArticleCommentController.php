@@ -24,9 +24,10 @@ class ArticleCommentController extends Controller
             }
 
             $comments = $article->comments()
-                ->whereNull('parent_id')
+                // ->whereNull('parent_id')
                 ->with('user', 'children.user')
                 ->get();
+
 
             return response()->json([
                 'message' => __('http-statuses.200'),
@@ -56,6 +57,10 @@ class ArticleCommentController extends Controller
                 'user_id' => Auth::id(),
                 'parent_id' => $request->input('parent_id'),
                 'content' => $request->input('content'),
+            ]);
+            return response()->json([
+                'message' => __('http-statuses.200'),
+                'data' => $articleComment->refresh(),
             ]);
         } catch (\Throwable $th) {
             return response()->json([

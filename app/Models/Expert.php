@@ -23,6 +23,7 @@ class Expert extends Model
     protected $appends = [
         'fee_after_discount',
         'years_of_experience',
+        'rating',
     ];
 
     protected $with = ['user', 'specialization'];
@@ -42,12 +43,18 @@ class Expert extends Model
 
     public function getFeeAfterDiscountAttribute()
     {
-        return $this->consulting_fee - ($this->consulting_fee * $this->discount / 100);
+        // return $this->consulting_fee - ($this->consulting_fee * $this->discount / 100);
+        return round($this->consulting_fee * (1 - $this->discount / 100));
     }
 
     public function getYearsOfExperienceAttribute()
     {
         return now()->year - $this->start_year;
+    }
+
+    public function getRatingAttribute()
+    {
+        return $this->ratings->avg('rating');
     }
 
     public function user()
@@ -68,5 +75,11 @@ class Expert extends Model
     public function experiences()
     {
         return $this->hasMany(ExpertExperience::class)->orderBy('start_year', 'desc');
+    }
+
+
+    public function ratings()
+    {
+        return $this->hasMany(ExpertRating::class);
     }
 }

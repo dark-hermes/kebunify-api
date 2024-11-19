@@ -11,16 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('forum', function (Blueprint $table) {
+        Schema::create('forums', function (Blueprint $table) {
             $table->id(); 
-            $table->string('title', 255); 
-            $table->unsignedBigInteger('author'); 
-            $table->timestamps(); 
-
-            $table->foreign('author')
-                ->references('id')
-                ->on('users')
-                ->onDelete('cascade'); 
+            $table->string('title'); 
+            $table->foreignId('user_id')
+                  ->constrained()
+                  ->onDelete('cascade')
+                  ->onUpdate('cascade'); 
+            $table->integer('likes')->default(0); 
+            $table->boolean('is_pinned')->default(false); 
+            $table->timestamps();
         });
     }
 
@@ -29,10 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('forum', function (Blueprint $table) {
-            $table->dropForeign(['author']);
-        });
-
-        Schema::dropIfExists('forum'); 
+        Schema::dropIfExists('forums');
     }
 };

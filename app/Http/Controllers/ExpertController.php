@@ -15,6 +15,7 @@ class ExpertController extends Controller
      */
     public function index(Request $request)
     {
+        $query = Expert::query();
         $search = $request->query('search');
         $limit = $request->query('limit') ?? 10;
 
@@ -24,6 +25,36 @@ class ExpertController extends Controller
                     return $query->whereRelation('user', 'name', 'like', '%' . $search . '%')
                         ->orWhereRelation('specialization', 'name', 'like', '%' . $search . '%');
                 })->with('user', 'specialization')->paginate($limit);
+
+            return response()->json([
+                'message' => __('http-statuses.200'),
+                'data' => $experts,
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('http-statuses.500'),
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    public function list(Request $request)
+    {
+        $search =  $request->query('search');
+        $specialization = $request->query('specialization');
+
+        try {
+            $experts = Expert::query()
+                ->where('is_active', true)
+                ->when($search, function ($query, $search) {
+                    return $query->whereRelation('user', 'name', 'like', '%' . $search . '%')
+                        ->orWhereRelation('specialization', 'name', 'like', '%' . $search . '%');
+                })
+                ->when($specialization, function ($query, $specialization) {
+                    return $query->whereRelation('specialization', 'id', $specialization);
+                })
+                ->with('user', 'specialization')
+                ->get();
 
             return response()->json([
                 'message' => __('http-statuses.200'),
@@ -93,6 +124,15 @@ class ExpertController extends Controller
                 'error' => config('app.debug') ? $th->getMessage() : null,
             ], 500);
         }
+
+        if($request -> has('category')) {
+            $search = $request->input('category');
+            $query->where('specialization','LIKE',"%{$search}%");
+        }
+
+
+        return response()->json($query->orderBy('created_at','desc')->get(),200);
+
     }
 
     /**
@@ -257,6 +297,29 @@ class ExpertController extends Controller
         }
     }
 
+    public function getExpertId()
+    {
+        try {
+            $expert = Expert::where('user_id', Auth::id())
+                ->get();
+
+            if (!$expert) {
+                return response()->json([
+                    'message' => __('http-statuses.404'),
+                ], 404);
+            }
+
+            return response()->json([
+                'message' => __('http-statuses.200'),
+                'data' => $expert,
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('http-statuses.404'),
+            ], 404);
+        }
+    }
+
     public function updateAuth(Request $request)
     {
         $request->validate([
@@ -277,7 +340,7 @@ class ExpertController extends Controller
                 return response()->json(['message' => 'Aksi tidak diizinkan'], 403);
             }
 
-            $expert->user->update([
+            $expert->update([
                 'expert_specialization_id' => $request->expert_specialization_id,
                 'start_year' => $request->start_year,
                 'consulting_fee' => $request->consulting_fee,
