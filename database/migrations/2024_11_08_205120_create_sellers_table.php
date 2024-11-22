@@ -16,6 +16,8 @@ return new class extends Migration
             $table->string('store_name');
             $table->text('address');
             $table->text('avatar')->nullable();
+            $table->text('description')->nullable();
+            $table->text('location')->nullable();
             $table->enum('status', ['ACTIVE', 'INACTIVE'])->default('ACTIVE');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->timestamps();
