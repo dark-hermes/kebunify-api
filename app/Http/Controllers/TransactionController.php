@@ -67,7 +67,12 @@ public function index(Request $request)
             $query->whereIn('payment_status', $paymentStatuses);
         }
 
-        $perPage = min($request->limit ?? 10, 100);
+        if ($request->filled('user_id')) {
+            $query->where('user_id', $request->user_id);
+        }
+
+
+        $perPage = min($request->limit ?? 100, 100);
         $transactions = $query->orderBy('created_at', 'desc')
                             ->paginate($perPage);
 

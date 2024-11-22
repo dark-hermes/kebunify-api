@@ -20,6 +20,8 @@ class SellerFactory extends Factory
     public function definition()
     {
         return [
+            'description' => $this->faker->sentence,
+            'location' => $this->faker->city,
             'store_name' => $this->faker->company,
             'address' => $this->faker->address,
             'avatar' => $this->faker->imageUrl(),

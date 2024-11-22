@@ -24,6 +24,7 @@ use App\Http\Controllers\ExpertSpecializationController;
 use App\Http\Controllers\ForumCommentController;
 use App\Http\Controllers\ForumController;
 use App\Http\Controllers\TagsController;
+use App\Http\Controllers\CartController;
 
 Route::group(['middleware' => 'guest'], function () {
     Route::post('/login',  [AuthController::class, 'login'])->name('login')->middleware('throttle:6,1');
@@ -155,7 +156,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('/products/{id}/reviews', [ProductController::class, 'getReviews']);
 
     Route::post('/cart/add', [CartController::class, 'addToCart']);
-    Route::get('/cart', [CartController::class, 'viewCart']);
+    Route::get('/cart/view', [CartController::class, 'viewCart']);
     Route::delete('/cart/remove/{itemId}', [CartController::class, 'removeFromCart']);
     Route::apiResource('categories', CategoryController::class);
 
