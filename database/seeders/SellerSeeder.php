@@ -13,6 +13,6 @@ class SellerSeeder extends Seeder
      */
     public function run()
     {
-        Seller::factory()->count(10)->create();
+        Seller::factory()->count(35)->create();
     }
 }

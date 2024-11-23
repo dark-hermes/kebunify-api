@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\Category;
 use App\Models\Review;
 use App\Models\Seller;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
@@ -16,48 +17,56 @@ class ProductController extends Controller
 {
 
     public function index(Request $request)
-{
-    try {
-        $perPage = $request->input('per_page', 10);
-        $query = $request->input('query'); 
-        $sortBy = $request->input('sort_by', 'id'); 
-        $sortOrder = $request->input('sort_order', 'asc');
+    {
+        try {
+            $perPage = $request->input('per_page', 10);
+            $limit = $request->input('limit', 10);
+            $query = $request->input('query'); 
+            $sortBy = $request->input('sort_by', 'id'); 
+            $sortOrder = $request->input('sort_order', 'asc');
+            $sellerId = $request->input('seller_id'); // Add seller_id filter
 
-        $productsQuery = Product::query();
+            $productsQuery = Product::with(['category', 'reviews.user', 'seller.user']);
 
-        if ($query) {
-            $query = strtolower(trim($query));
-            $productsQuery->whereRaw('LOWER(name) LIKE ?', ["%{$query}%"])
-                ->orWhereRaw('LOWER(description) LIKE ?', ["%{$query}%"]);
+            if ($query) {
+                $query = strtolower(trim($query));
+                $productsQuery->where(function($q) use ($query) {
+                    $q->whereRaw('LOWER(name) LIKE ?', ["%{$query}%"])
+                    ->orWhereRaw('LOWER(description) LIKE ?', ["%{$query}%"]);
+                });
+            }
+
+            if ($sellerId) {
+                $productsQuery->where('user_id', $sellerId);
+            }
+
+            $validSortBy = ['id', 'price', 'created_at'];
+            $validSortOrder = ['asc', 'desc'];
+
+            if (!in_array($sortBy, $validSortBy)) {
+                $sortBy = 'id';
+            }
+
+            if (!in_array($sortOrder, $validSortOrder)) {
+                $sortOrder = 'asc';
+            }
+
+            $productsQuery->orderBy($sortBy, $sortOrder);
+
+            $products = $productsQuery->limit($limit)->paginate($perPage);
+
+            return response()->json([
+                'message' => 'Products retrieved successfully',
+                'data' => $products
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error fetching products: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Failed to fetch products',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        $validSortBy = ['id', 'price'];
-        $validSortOrder = ['asc', 'desc'];
-
-        if (!in_array($sortBy, $validSortBy)) {
-            $sortBy = 'id';
-        }
-
-        if (!in_array($sortOrder, $validSortOrder)) {
-            $sortOrder = 'asc';
-        }
-
-        $productsQuery->orderBy($sortBy, $sortOrder);
-
-        $products = $productsQuery->paginate($perPage);
-
-        return response()->json([
-            'message' => 'Products retrieved successfully',
-            'data' => $products
-        ]);
-    } catch (\Exception $e) {
-        Log::error('Error fetching products: ' . $e->getMessage());
-        return response()->json([
-            'message' => 'Failed to fetch products',
-            'error' => $e->getMessage()
-        ], 500);
     }
-}
 
     public function show($id)
     {
@@ -80,28 +89,48 @@ class ProductController extends Controller
         }
     }
 
-    public function random()
-    {
-        try {
-            $product = Product::inRandomOrder()->first();
-            if (!$product) {
-                return response()->json([
-                    'message' => 'No products found'
-                ], 404);
-            }
-            return response()->json([
-                'message' => 'Random product retrieved successfully',
-                'data' => $product
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Error retrieving random product: ' . $e->getMessage());
-            return response()->json([
-                'message' => 'Failed to retrieve random product',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
+    public function getAll(Request $request)
+{
+    try {
+        $query = Product::with([
+            'category',
+            'user',
+            'reviews.user'
+        ]);
 
+        // Add sorting if needed
+        if ($request->has('sort_by')) {
+            $sortBy = $request->input('sort_by', 'created_at');
+            $sortOrder = $request->input('sort_order', 'desc');
+            $query->orderBy($sortBy, $sortOrder);
+        }
+
+        // Add any filters if needed
+        if ($request->has('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        $products = $query->get();
+
+        return response()->json([
+            'message' => 'Products retrieved successfully',
+            'data' => $products
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('Error fetching all products:', [
+            'error' => $e->getMessage()
+        ]);
+        
+        return response()->json([
+            'message' => 'Failed to fetch products',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
+
+    
     public function store(Request $request)
     {
         try {
@@ -186,7 +215,7 @@ class ProductController extends Controller
         ]);
     } catch (ModelNotFoundException $e) {
         return response()->json([
-            'message' => 'Product not found'
+            'message' => 'Product not found awmdlamwloda'
         ], 404);
     } catch (\Exception $e) {
         Log::error('Error updating product: ' . $e->getMessage());
@@ -221,7 +250,7 @@ class ProductController extends Controller
             ], 204);
         } catch (ModelNotFoundException $e) {
             return response()->json([
-                'message' => 'Product not found'
+                'message' => 'Product not foundasda dsasdas'
             ], 404);
         } catch (\Exception $e) {
             Log::error('Error deleting product: ' . $e->getMessage());
@@ -279,93 +308,93 @@ class ProductController extends Controller
 
     
 
-    public function getRelated($id)
-    {
-        try {
-            $product = Product::findOrFail($id);
-            $relatedProducts = Product::where('category_id', $product->category_id)
-                ->where('id', '!=', $id)
-                ->get();
-            return response()->json([
-                'message' => 'Related products retrieved successfully',
-                'data' => $relatedProducts
-            ]);
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
-                'message' => 'Product not found'
-            ], 404);
-        } catch (\Exception $e) {
-            Log::error('Error fetching related products: ' . $e->getMessage());
-            return response()->json([
-                'message' => 'Failed to fetch related products',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
+    // public function getRelated($id)
+    // {
+    //     try {
+    //         $product = Product::findOrFail($id);
+    //         $relatedProducts = Product::where('category_id', $product->category_id)
+    //             ->where('id', '!=', $id)
+    //             ->get();
+    //         return response()->json([
+    //             'message' => 'Related products retrieved successfully',
+    //             'data' => $relatedProducts
+    //         ]);
+    //     } catch (ModelNotFoundException $e) {
+    //         return response()->json([
+    //             'message' => 'Product not found'
+    //         ], 404);
+    //     } catch (\Exception $e) {
+    //         Log::error('Error fetching related products: ' . $e->getMessage());
+    //         return response()->json([
+    //             'message' => 'Failed to fetch related products',
+    //             'error' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
 
-    public function getReviews($id)
-    {
-        try {
-            $product = Product::findOrFail($id);
-            return response()->json([
-                'message' => 'Reviews retrieved successfully',
-                'data' => $product->reviews
-            ]);
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
-                'message' => 'Product not found'
-            ], 404);
-        } catch (\Exception $e) {
-            Log::error('Error fetching product reviews: ' . $e->getMessage());
-            return response()->json([
-                'message' => 'Failed to fetch reviews',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
+    // public function getReviews($id)
+    // {
+    //     try {
+    //         $product = Product::findOrFail($id);
+    //         return response()->json([
+    //             'message' => 'Reviews retrieved successfully',
+    //             'data' => $product->reviews
+    //         ]);
+    //     } catch (ModelNotFoundException $e) {
+    //         return response()->json([
+    //             'message' => 'Product not found'
+    //         ], 404);
+    //     } catch (\Exception $e) {
+    //         Log::error('Error fetching product reviews: ' . $e->getMessage());
+    //         return response()->json([
+    //             'message' => 'Failed to fetch reviews',
+    //             'error' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
 
     public function getProductsBySeller(Request $request, $sellerId)
-    {
-        try {
-            $seller = User::findOrFail($sellerId);
+{
+    try {
+        $seller = User::findOrFail($sellerId);
 
-            $query = Product::where('user_id', $sellerId);
+        $query = Product::where('user_id', $sellerId);
 
-            // Filter by category
-            if ($request->filled('category_id')) {
-                $query->where('category_id', $request->category_id);
-            }
-
-            // Filter by price range
-            if ($request->filled('min_price') && $request->filled('max_price')) {
-                $query->whereBetween('price', [$request->min_price, $request->max_price]);
-            } elseif ($request->filled('min_price')) {
-                $query->where('price', '>=', $request->min_price);
-            } elseif ($request->filled('max_price')) {
-                $query->where('price', '<=', $request->max_price);
-            }
-
-            // Sort by newest
-            if ($request->filled('sort') && $request->sort == 'newest') {
-                $query->orderBy('created_at', 'desc');
-            }
-
-            $products = $query->get();
-
-            return response()->json([
-                'message' => 'Products retrieved successfully',
-                'data' => $products
-            ]);
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
-                'message' => 'Seller not found'
-            ], 404);
-        } catch (\Exception $e) {
-            Log::error('Error fetching products by seller: ' . $e->getMessage());
-            return response()->json([
-                'message' => 'Failed to fetch products by seller',
-                'error' => $e->getMessage()
-            ], 500);
+        // Filter by category
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
         }
+
+        // Filter by price range
+        if ($request->filled('min_price') && $request->filled('max_price')) {
+            $query->whereBetween('price', [$request->min_price, $request->max_price]);
+        } elseif ($request->filled('min_price')) {
+            $query->where('price', '>=', $request->min_price);
+        } elseif ($request->filled('max_price')) {
+            $query->where('price', '<=', $request->max_price);
+        }
+
+        // Sort by newest
+        if ($request->filled('sort') && $request->sort == 'newest') {
+            $query->orderBy('created_at', 'desc');
+        }
+
+        $products = $query->get();
+
+        return response()->json([
+            'message' => 'Products retrieved successfully',
+            'data' => $products
+        ]);
+    } catch (ModelNotFoundException $e) {
+        return response()->json([
+            'message' => 'Seller not found'
+        ], 404);
+    } catch (\Exception $e) {
+        Log::error('Error fetching products by seller: ' . $e->getMessage());
+        return response()->json([
+            'message' => 'Failed to fetch products by seller',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
 }
