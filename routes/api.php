@@ -146,12 +146,14 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     Route::get('/products', [ProductController::class, 'index']);
     Route::get('/products/{id}', [ProductController::class, 'show']);
-    Route::get('/products/random', [ProductController::class, 'random']);
+    Route::get('/products/ayam', [ProductController::class, 'random']);
+    Route::get('/products/allproducts', [ProductController::class, 'getAll']);
     Route::post('/products', [ProductController::class, 'store']);
     Route::put('/products/{id}', [ProductController::class, 'update']);
     Route::delete('/products/{id}', [ProductController::class, 'destroy']);
     Route::get('/categories/{category_id}/products', [ProductController::class, 'getByCategory']);
     Route::get('/products/search', [ProductController::class, 'search']);
+    Route::get('/sellers/{sellerId}/products', [ProductController::class, 'getProductsBySeller']);
     Route::get('/products/{id}/related', [ProductController::class, 'getRelated']);
     Route::get('/products/{id}/reviews', [ProductController::class, 'getReviews']);
 

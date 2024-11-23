@@ -13,8 +13,6 @@ use App\Models\Review;
 class Seller extends Model
 {
     use HasFactory;
-
-    protected $table = 'sellers';
     protected $fillable = [
         'store_name',
         'address',
@@ -22,7 +20,8 @@ class Seller extends Model
         'status',
         'user_id',
         'location',
-        
+        'city',
+        'description'
     ];
 
     public function user()
@@ -30,6 +29,9 @@ class Seller extends Model
         return $this->belongsTo(User::class);
     }
 
-
+    public function products()
+    {
+        return $this->hasMany(Product::class, 'user_id');
+    }
 }
 
