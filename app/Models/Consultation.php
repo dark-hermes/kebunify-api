@@ -24,6 +24,15 @@ class Consultation extends Model
 
     protected $with = ['user', 'expert', 'transaction'];
 
+    protected $appends = [
+        'status_label',
+    ];
+
+    public function getStatusLabelAttribute()
+    {
+        return $this->status === 'closed' ? 'Selesai' : 'Belum Selesai';
+    }
+
     public function getIsPaidAttribute()
     {
         // return $this->transaction->payment_date !== null;

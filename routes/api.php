@@ -72,6 +72,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     Route::get('/consultations', [ConsultationController::class, 'index']);
     Route::get('/consultations/user/{user_id}', [ConsultationController::class, 'getByUserId']);
+    Route::get('/consultations/expert/{expert_id}', [ConsultationController::class, 'getByExpertId']);
     Route::get('/consultations/{id}', [ConsultationController::class, 'show']);
     Route::post('/consultations', [ConsultationController::class, 'store']);
     Route::put('/consultations/{id}', [ConsultationController::class, 'update']);
@@ -79,6 +80,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::delete('/consultations/{id}', [ConsultationController::class, 'destroy']);
     Route::post('consultations/{id}/transaction', [ConsultationController::class, 'storeTransaction']);
     Route::put('consultations/{id}/transaction', [ConsultationController::class, 'updateTransaction']);
+    Route::put('consultations/{id}/close', [ConsultationController::class, 'close']);
 
     Route::get('/experts/leaderboard', [ExpertController::class, 'leaderboard']);
     Route::post('/experts/promote/{user_id}', [ExpertController::class, 'promote']);
@@ -112,10 +114,10 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     // Route::apiResource('tags', TagsController::class);
 
-    Route::post('/forums', [ForumController::class, 'store']); 
-    Route::put('/forums/{id}', [ForumController::class, 'update']); 
-    Route::delete('/forums/{id}', [ForumController::class, 'destroy']); 
-    Route::post('/forums/{id}/like', [ForumController::class, 'like']); 
+    Route::post('/forums', [ForumController::class, 'store']);
+    Route::put('/forums/{id}', [ForumController::class, 'update']);
+    Route::delete('/forums/{id}', [ForumController::class, 'destroy']);
+    Route::post('/forums/{id}/like', [ForumController::class, 'like']);
     Route::get('/forums/my-forums', [ForumController::class, 'getUserForums']);
 
     Route::post('/forums/{forumId}/comments', [ForumCommentController::class, 'store']);

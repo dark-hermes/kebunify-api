@@ -14,7 +14,9 @@ class Chat extends Model
         'consultation_id',
     ];
 
-    protected $appends = ['is_me'];
+    protected $appends = [
+        'is_me',
+    ];
 
     protected $with = ['user'];
 

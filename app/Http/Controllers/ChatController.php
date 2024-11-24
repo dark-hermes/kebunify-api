@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Chat;
+use App\Models\User;
 use App\Models\Consultation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -55,6 +56,13 @@ class ChatController extends Controller
                     'consultation_id' => $consultation_id,
                 ]);
             });
+
+            $opponentId = $consultation->user_id === Auth::id() ? $consultation->expert_id : $consultation->user_id;
+            $opponent = User::find($opponentId);
+            $from = Auth::user()->name;
+
+            $opponent->notify(new \App\Notifications\ChatNotification($request->message, $from));
+
             return response()->json([
                 'message' => 'Chat created',
                 'data' => $chat

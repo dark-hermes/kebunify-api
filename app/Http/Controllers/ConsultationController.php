@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Models\Consultation;
-use App\Models\ConsultationTransaction;
-use Illuminate\Support\Facades\Auth;
-
-
 use Illuminate\Http\Request;
+
+
+use Illuminate\Support\Facades\Auth;
+use App\Models\ConsultationTransaction;
 
 class ConsultationController extends Controller
 {
@@ -31,7 +32,23 @@ class ConsultationController extends Controller
     public function getByUserId($userId)
     {
         try {
-            $consultations = Consultation::where('user_id', $userId)->get();
+            $consultations = Consultation::where('user_id', $userId)->latest()->get();
+            return response()->json([
+                'message' => 'Konsultasi Ditemukan',
+                'data' => $consultations
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Konsultasi Tidak Ditemukan',
+                'error' => $e->getMessage()
+            ], 404);
+        }
+    }
+
+    public function getByExpertId($expertId)
+    {
+        try {
+            $consultations = Consultation::where('expert_id', $expertId)->latest()->get();
             return response()->json([
                 'message' => 'Konsultasi Ditemukan',
                 'data' => $consultations
@@ -67,6 +84,13 @@ class ConsultationController extends Controller
         ]);
 
         try {
+            $user = User::where('id', Auth::id())->first();
+            if ($user->consultations()->where('status', 'open')->exists()) {
+                return response()->json([
+                    'message' => 'Anda sudah memiliki konsultasi yang sedang berlangsung',
+                ], 400);
+            }
+
             $consultation = Consultation::create([
                 'user_id' => Auth::id(),
                 'expert_id' => $request->expert_id,
@@ -136,8 +160,9 @@ class ConsultationController extends Controller
     {
         try {
             $consultation = Consultation::findOrFail($id);
-            $consultation->status = 'closed';
-            $consultation->save();
+            $consultation->update([
+                'status' => 'closed'
+            ]);
 
             return response()->json([
                 'message' => 'Konsultasi Berhasil Ditutup',
