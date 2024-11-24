@@ -78,6 +78,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::put('/consultations/change-status/{id}', [ConsultationController::class, 'changeStatus']);
     Route::delete('/consultations/{id}', [ConsultationController::class, 'destroy']);
     Route::post('consultations/{id}/transaction', [ConsultationController::class, 'storeTransaction']);
+    Route::put('consultations/{id}/transaction', [ConsultationController::class, 'updateTransaction']);
 
     Route::get('/experts/leaderboard', [ExpertController::class, 'leaderboard']);
     Route::post('/experts/promote/{user_id}', [ExpertController::class, 'promote']);
