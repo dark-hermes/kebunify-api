@@ -14,3 +14,4 @@ Route::get('/', function () {
 Route::get('payments/{type}/{snap_token}', [PaymentController::class, 'show']);
 // Route::get('payments/consultation', [PaymentController::class, 'updateConsultationStatus']);
 Route::get('payments/consultation/{snap_token}/status', [PaymentController::class, 'updateConsultationStatus']);
+Route::get('payments/product/{snap_token}/status', [PaymentController::class, 'updateProductPaymentStatus']);

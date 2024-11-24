@@ -58,7 +58,7 @@ class PaymentController extends Controller
             ]);
     }
 
-    public function updateProductPaymentStatus(Request $request, string $type, string $snap_token)
+    public function updateProductPaymentStatus(Request $request, string $snap_token)
     {
         $request->validate([
             'status' => 'required|in:success,failed',
@@ -71,7 +71,8 @@ class PaymentController extends Controller
         if ($transaction) {
             if ($status === 'success') {
                 $transaction->update([
-                    'payment_status' => 'paid'
+                    'payment_status' => 'paid',
+                    'status' => 'completed',
                 ]);
 
                 $message = 'Pembayaran berhasil! Pesanan Anda akan segera diproses.';
