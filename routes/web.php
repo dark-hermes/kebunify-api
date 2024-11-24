@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Controllers\ConsultationController;
 use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
+use App\Models\ConsultationTransaction;
 
 Route::get('/', function () {
     return view('welcome');

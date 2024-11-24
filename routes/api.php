@@ -211,3 +211,5 @@ Route::get('/forums/{forumId}/comments', [ForumCommentController::class, 'index'
 
 Route::get('/forum/{forumId}/comments', [ForumCommentController::class, 'index']);
 Route::get('/forum-tags', [ForumTagController::class, 'index']);
+
+Route::get('consultations/{id}/invoice', [ConsultationController::class, 'printInvoice']);

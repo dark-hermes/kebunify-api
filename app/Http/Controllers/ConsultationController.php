@@ -3,10 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Barryvdh\DomPDF\PDF;
 use App\Models\Consultation;
+
+
 use Illuminate\Http\Request;
-
-
 use Illuminate\Support\Facades\Auth;
 use App\Models\ConsultationTransaction;
 
@@ -247,5 +248,13 @@ class ConsultationController extends Controller
                 'error' => config('app.debug') ? $th->getMessage() : null,
             ], 500);
         }
+    }
+
+    public function printInvoice($id)
+    {
+        $consultation = Consultation::findOrFail($id);
+        $pdf = app('dompdf.wrapper');
+        $pdf->loadView('pdf.consultation-invoice', compact('consultation'));
+        return $pdf->download('invoice-' . $consultation->id . '.pdf');
     }
 }
