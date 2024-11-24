@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
+use Barryvdh\DomPDF\PDF;
 use App\Models\Consultation;
-use App\Models\ConsultationTransaction;
-use Illuminate\Support\Facades\Auth;
 
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Models\ConsultationTransaction;
 
 class ConsultationController extends Controller
 {
@@ -31,7 +33,23 @@ class ConsultationController extends Controller
     public function getByUserId($userId)
     {
         try {
-            $consultations = Consultation::where('user_id', $userId)->get();
+            $consultations = Consultation::where('user_id', $userId)->latest()->get();
+            return response()->json([
+                'message' => 'Konsultasi Ditemukan',
+                'data' => $consultations
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Konsultasi Tidak Ditemukan',
+                'error' => $e->getMessage()
+            ], 404);
+        }
+    }
+
+    public function getByExpertId($expertId)
+    {
+        try {
+            $consultations = Consultation::where('expert_id', $expertId)->latest()->get();
             return response()->json([
                 'message' => 'Konsultasi Ditemukan',
                 'data' => $consultations
@@ -67,6 +85,13 @@ class ConsultationController extends Controller
         ]);
 
         try {
+            $user = User::where('id', Auth::id())->first();
+            if ($user->consultations()->where('status', 'open')->exists()) {
+                return response()->json([
+                    'message' => 'Anda sudah memiliki konsultasi yang sedang berlangsung',
+                ], 400);
+            }
+
             $consultation = Consultation::create([
                 'user_id' => Auth::id(),
                 'expert_id' => $request->expert_id,
@@ -136,8 +161,9 @@ class ConsultationController extends Controller
     {
         try {
             $consultation = Consultation::findOrFail($id);
-            $consultation->status = 'closed';
-            $consultation->save();
+            $consultation->update([
+                'status' => 'closed'
+            ]);
 
             return response()->json([
                 'message' => 'Konsultasi Berhasil Ditutup',
@@ -185,5 +211,50 @@ class ConsultationController extends Controller
         $consultation->delete();
 
         return response()->json(['message' => 'Consultation deleted'], 200);
+    }
+
+    public function rate(Request $request, $consultationId)
+    {
+        $request->validate([
+            'rating' => 'required|numeric|min:1|max:5',
+            'comment' => 'nullable|string',
+        ]);
+
+        try {
+            $consultation = Consultation::find($consultationId);
+
+            if (!$consultation) {
+                return response()->json(['message' => 'Sesi konsultasi tidak ditemukan.'], 404);
+            }
+
+            if ($consultation->rating) {
+                return response()->json(['message' => 'Anda sudah memberikan rating untuk sesi konsultasi ini.'], 400);
+            }
+
+            $rating = $consultation->rating()->create([
+                'user_id' => Auth::id(),
+                'expert_id' => $consultation->expert_id,
+                'rating' => $request->rating,
+                'comment' => $request->comment,
+            ]);
+
+            return response()->json([
+                'message' => 'Expert rated successfully',
+                'data' => $rating,
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('http-statuses.500'),
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    public function printInvoice($id)
+    {
+        $consultation = Consultation::findOrFail($id);
+        $pdf = app('dompdf.wrapper');
+        $pdf->loadView('pdf.consultation-invoice', compact('consultation'));
+        return $pdf->download('invoice-' . $consultation->id . '.pdf');
     }
 }

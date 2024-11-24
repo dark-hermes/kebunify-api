@@ -14,7 +14,7 @@ return new class extends Migration
             $table->id();
             $table->string('topic')->nullable();
             $table->text('description')->nullable();
-            $table->enum('status', ['open', 'closed'])->default('open');
+            $table->enum('status', ['open', 'closed'])->default('closed');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('expert_id')->constrained()->onDelete('cascade');
             $table->timestamps();

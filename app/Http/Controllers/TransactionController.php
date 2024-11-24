@@ -59,7 +59,7 @@ public function index(Request $request)
             });
         }
 
-        // Status filter - validate allowed values 
+        // Status filter - validate allowed values
         if ($request->filled('status')) {
             $allowedStatuses = ['pending', 'processing', 'completed', 'cancelled'];
             $statuses = array_intersect(explode(',', $request->status), $allowedStatuses);
@@ -322,7 +322,7 @@ public function updateStatus(Request $request, $id)
     //     if ($transaction->user_id !== Auth::id() or Auth::user()->role !== 'admin') {
     //         return response()->json(['error' => 'Forbidden'], 403);
     //     }
-        
+
 
     //     $transaction->delete();
     //     return response()->json(['message' => 'Transaction deleted successfully']);

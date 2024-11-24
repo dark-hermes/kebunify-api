@@ -66,7 +66,7 @@ class ArticleController extends Controller implements HasMiddleware
     // {
 
         $search = $request->query('search');
-        $paginate = $request->query('paginate');
+        $limit = $request->query('limit') ?? 9;
 
 
         try {
@@ -76,9 +76,32 @@ class ArticleController extends Controller implements HasMiddleware
                         ->orWhere('content', 'like', '%' . $search . '%');
                 });
 
-            $articles = ! $paginate
+            $articles = ! $limit
                 ? $articles->get()
-                : $articles->paginate($paginate);
+                : $articles->paginate($limit);
+
+            return response()->json([
+                'message' => __('http-statuses.200'),
+                'data' => $articles,
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('http-statuses.500'),
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    public function list(Request $request)
+    {
+        $search = $request->query('search');
+
+        try {
+            $articles = Article::query()
+                ->when($search, function ($query, $search) {
+                    return $query->where('title', 'like', '%' . $search . '%')
+                        ->orWhere('content', 'like', '%' . $search . '%');
+                })->get();
 
             return response()->json([
                 'message' => __('http-statuses.200'),
@@ -333,8 +356,8 @@ class ArticleController extends Controller implements HasMiddleware
         $request->validate([
             'title' => 'required|string',
             'content' => 'required|string',
-            'is_published' => 'required|boolean',
-            'is_premium' => 'required|boolean',
+            'is_published' => 'required|integer',
+            'is_premium' => 'required|integer',
             'tags' => 'required|array',
         ]);
 
@@ -350,6 +373,8 @@ class ArticleController extends Controller implements HasMiddleware
 
 
             DB::transaction(function () use ($request, $article) {
+
+
                 $article->update([
                     'title' => $request->title,
                     'content' => $request->content,
@@ -376,6 +401,8 @@ class ArticleController extends Controller implements HasMiddleware
             ], 500);
         }
     }
+
+
 
     public function uploadImage(Request $request, string $id)
     {
@@ -412,6 +439,8 @@ class ArticleController extends Controller implements HasMiddleware
         }
     }
 
+
+
     /**
      * Remove the specified resource from storage.
      */
@@ -447,6 +476,49 @@ class ArticleController extends Controller implements HasMiddleware
                 'error' => config('app.debug') ? $th->getMessage() : null,
             ], 500);
         }
+    }
+
+    public function deleteImage(string $id)
+    {
+        //
+        // $article = Article::findOrFail($id);
+        // $file = public_path('images/articles').$article->picture;
+        // if (file_exists(public_path('images/articles/' . $article->picture))) {
+        //     @unlink(public_path('images/articles/' . $article->picture)); // Delete the old file
+        // }
+        // $article->delete();
+
+        // return response()->json(['message' =>'Article deleted successfully']);
+
+        try {
+            $article = Article::find($id);
+
+            if (! $article) {
+                return response()->json([
+                    'message' => __('http-statuses.404'),
+                ], 404);
+            }
+
+            $file = public_path('articles').$article->image;
+            if (file_exists(public_path('articles' . $article->image))) {
+                @unlink(public_path('articles' . $article->image)); // Delete the old file
+            }
+
+            $article->update([
+                'image' => null,
+            ]);
+
+            return response()->json([
+                'message' => __('responses.remove.success', ['resource' => __('resources.avatar')]),
+                'data' => $article,
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('responses.remove.failed', ['resource' => __('resources.avatar')]),
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
+        }
+
     }
 
     public function getTags()
