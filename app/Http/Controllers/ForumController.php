@@ -16,6 +16,7 @@ class ForumController extends Controller
     {
         try {
             $perPage = $request->query('per_page', 10);
+            $page = $request->query('page', 1);
             $search = $request->query('search');
 
             $forums = Forum::query()
@@ -24,28 +25,15 @@ class ForumController extends Controller
                 })
                 ->withCount('comments')
                 ->with('writer:id,name,avatar')
-                ->paginate($perPage);
-
-            $modifiedForums = collect($forums->items())->map(function ($forum) {
-                $forum->replyCount = $forum->comments_count;
-                unset($forum->comments_count);
-                return $forum;
-            });
-
-            $paginatedResult = new LengthAwarePaginator(
-                $modifiedForums,
-                $forums->total(),
-                $forums->perPage(),
-                $forums->currentPage(),
-                [
-                    'path' => $request->url(),
-                    'query' => $request->query(),
-                ]
-            );
+                ->paginate($perPage, ['*'], 'page', $page);
 
             return response()->json([
-                'message' => __('http-statuses.200'),
-                'data' => $paginatedResult,
+                'message' => 'OK',
+                'data' => $forums->items(),
+                'total' => $forums->total(),
+                'current_page' => $forums->currentPage(),
+                'per_page' => $forums->perPage(),
+                'last_page' => $forums->lastPage(),
             ]);
         } catch (\Throwable $th) {
             return response()->json([
@@ -55,6 +43,112 @@ class ForumController extends Controller
         }
     }
 
+    public function getUserForums(Request $request)
+    {
+        try {
+            $perPage = $request->query('per_page', 10);
+            $page = $request->query('page', 1);
+
+            $userForums = Forum::where('user_id', Auth::id())
+                ->withCount('comments')
+                ->with('writer:id,name,avatar')
+                ->paginate($perPage, ['*'], 'page', $page);
+
+            return response()->json([
+                'message' => 'OK',
+                'data' => $userForums->items(),
+                'total' => $userForums->total(),
+                'current_page' => $userForums->currentPage(),
+                'per_page' => $userForums->perPage(),
+                'last_page' => $userForums->lastPage(),
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => 'Internal Server Error.',
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    public function listPopular(Request $request)
+    {
+        try {
+            $perPage = $request->query('per_page', 10);
+            $page = $request->query('page', 1);
+
+            $forums = Forum::orderBy('likes', 'desc')
+                ->with('tags:id,name', 'writer:id,name')
+                ->paginate($perPage, ['*'], 'page', $page);
+
+            return response()->json([
+                'message' => 'OK',
+                'data' => $forums->items(),
+                'total' => $forums->total(),
+                'current_page' => $forums->currentPage(),
+                'per_page' => $forums->perPage(),
+                'last_page' => $forums->lastPage(),
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => 'Internal Server Error.',
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    public function listLatest(Request $request)
+    {
+        try {
+            $perPage = $request->query('per_page', 10);
+            $page = $request->query('page', 1);
+
+            $forums = Forum::orderBy('created_at', 'desc')
+                ->with('tags:id,name', 'writer:id,name')
+                ->paginate($perPage, ['*'], 'page', $page);
+
+            return response()->json([
+                'message' => 'OK',
+                'data' => $forums->items(),
+                'total' => $forums->total(),
+                'current_page' => $forums->currentPage(),
+                'per_page' => $forums->perPage(),
+                'last_page' => $forums->lastPage(),
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => 'Internal Server Error.',
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    public function filterByTag(Request $request, $tagId)
+    {
+        try {
+            $perPage = $request->query('per_page', 10);
+            $page = $request->query('page', 1);
+
+            $forums = Forum::whereHas('tags', function ($query) use ($tagId) {
+                $query->where('tags.id', $tagId);
+            })
+                ->with('tags:id,name', 'writer:id,name')
+                ->paginate($perPage, ['*'], 'page', $page);
+
+            return response()->json([
+                'message' => 'OK',
+                'data' => $forums->items(),
+                'total' => $forums->total(),
+                'current_page' => $forums->currentPage(),
+                'per_page' => $forums->perPage(),
+                'last_page' => $forums->lastPage(),
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => 'Internal Server Error.',
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
+        }
+    }
 
     public function show($id)
     {
@@ -63,98 +157,14 @@ class ForumController extends Controller
                 ->findOrFail($id);
 
             return response()->json([
-                'message' => __('http-statuses.200'),
+                'message' => 'OK',
                 'data' => $forum,
             ]);
         } catch (\Throwable $th) {
             return response()->json([
-                'message' => __('http-statuses.404'),
+                'message' => 'Not Found.',
                 'error' => config('app.debug') ? $th->getMessage() : null,
             ], 404);
-        }
-    }
-
-    public function filterByTag($tagId)
-    {
-        try {
-            $forums = Forum::whereHas('tags', function ($query) use ($tagId) {
-                $query->where('tags.id', $tagId);
-            })->with('tags:id,name', 'writer:id,name')->get();
-
-            return response()->json([
-                'message' => __('http-statuses.200'),
-                'data' => $forums,
-            ]);
-        } catch (\Throwable $th) {
-            return response()->json([
-                'message' => 'Kesalahan dari dalam server',
-                'error' => config('app.debug') ? $th->getMessage() : null,
-            ], 500);
-        }
-    }
-
-
-    public function home()
-    {
-        try {
-            $latestForum = Forum::orderBy('created_at', 'desc')
-                ->with('tags:id,name', 'writer:id,name')
-                ->first();
-
-            $popularForum = Forum::orderBy('likes', 'desc')
-                ->with('tags:id,name', 'writer:id,name')
-                ->first();
-
-            return response()->json([
-                'message' => __('http-statuses.200'),
-                'data' => [
-                    'latest' => $latestForum,
-                    'popular' => $popularForum,
-                ],
-            ]);
-        } catch (\Throwable $th) {
-            return response()->json([
-                'message' => __('http-statuses.500'),
-                'error' => config('app.debug') ? $th->getMessage() : null,
-            ], 500);
-        }
-    }
-
-    public function listLatest()
-    {
-        try {
-            $forums = Forum::orderBy('created_at', 'desc')
-                ->with('tags:id,name', 'writer:id,name')
-                ->get();
-
-            return response()->json([
-                'message' => __('http-statuses.200'),
-                'data' => $forums,
-            ]);
-        } catch (\Throwable $th) {
-            return response()->json([
-                'message' => __('http-statuses.500'),
-                'error' => config('app.debug') ? $th->getMessage() : null,
-            ], 500);
-        }
-    }
-
-    public function listPopular()
-    {
-        try {
-            $forums = Forum::orderBy('likes', 'desc')
-                ->with('tags:id,name', 'writer:id,name')
-                ->get();
-
-            return response()->json([
-                'message' => __('http-statuses.200'),
-                'data' => $forums,
-            ]);
-        } catch (\Throwable $th) {
-            return response()->json([
-                'message' => __('http-statuses.500'),
-                'error' => config('app.debug') ? $th->getMessage() : null,
-            ], 500);
         }
     }
 
@@ -175,34 +185,6 @@ class ForumController extends Controller
                     'id' => $forum->id,
                     'likes' => $forum->likes,
                 ],
-            ]);
-        } catch (\Throwable $th) {
-            return response()->json([
-                'message' => 'Internal Server Error.',
-                'error' => config('app.debug') ? $th->getMessage() : null,
-            ], 500);
-        }
-    }
-
-    public function getUserForums(Request $request)
-    {
-        try {
-            $perPage = $request->query('per_page', 10);
-
-            $userForums = Forum::where('user_id', Auth::id()) 
-                ->withCount('comments') 
-                ->with('writer:id,name,avatar') 
-                ->paginate($perPage);
-
-            $userForums->getCollection()->transform(function ($forum) {
-                $forum->replyCount = $forum->comments_count;
-                unset($forum->comments_count);
-                return $forum;
-            });
-
-            return response()->json([
-                'message' => __('http-statuses.200'),
-                'data' => $userForums,
             ]);
         } catch (\Throwable $th) {
             return response()->json([

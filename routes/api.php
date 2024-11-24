@@ -23,7 +23,9 @@ use App\Http\Controllers\VerificationEmailController;
 use App\Http\Controllers\ExpertSpecializationController;
 use App\Http\Controllers\ForumCommentController;
 use App\Http\Controllers\ForumController;
-use App\Http\Controllers\TagsController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\ForumTagController;
+
 
 Route::group(['middleware' => 'guest'], function () {
     Route::post('/login',  [AuthController::class, 'login'])->name('login')->middleware('throttle:6,1');
@@ -77,6 +79,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::put('/consultations/change-status/{id}', [ConsultationController::class, 'changeStatus']);
     Route::delete('/consultations/{id}', [ConsultationController::class, 'destroy']);
     Route::post('consultations/{id}/transaction', [ConsultationController::class, 'storeTransaction']);
+    Route::put('consultations/{id}/transaction', [ConsultationController::class, 'updateTransaction']);
 
     Route::get('/experts/leaderboard', [ExpertController::class, 'leaderboard']);
     Route::post('/experts/promote/{user_id}', [ExpertController::class, 'promote']);
@@ -107,8 +110,6 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     Route::get('expert-specializations/list', [ExpertSpecializationController::class, 'list']);
     Route::apiResource('expert-specializations', ExpertSpecializationController::class);
-
-    Route::apiResource('tags', TagsController::class);
 
     Route::post('/forums', [ForumController::class, 'store']);
     Route::put('/forums/{id}', [ForumController::class, 'update']);
@@ -149,15 +150,20 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     Route::get('/products', [ProductController::class, 'index']);
     Route::get('/products/{id}', [ProductController::class, 'show']);
-    Route::get('/products/random', [ProductController::class, 'random']);
+    Route::get('/products/ayam', [ProductController::class, 'random']);
+    Route::get('/products/allproducts', [ProductController::class, 'getAll']);
     Route::post('/products', [ProductController::class, 'store']);
     Route::put('/products/{id}', [ProductController::class, 'update']);
     Route::delete('/products/{id}', [ProductController::class, 'destroy']);
     Route::get('/categories/{category_id}/products', [ProductController::class, 'getByCategory']);
     Route::get('/products/search', [ProductController::class, 'search']);
+    Route::get('/sellers/{sellerId}/products', [ProductController::class, 'getProductsBySeller']);
     Route::get('/products/{id}/related', [ProductController::class, 'getRelated']);
     Route::get('/products/{id}/reviews', [ProductController::class, 'getReviews']);
 
+    Route::post('/cart/add', [CartController::class, 'addToCart']);
+    Route::get('/cart/view', [CartController::class, 'viewCart']);
+    Route::delete('/cart/remove/{itemId}', [CartController::class, 'removeFromCart']);
     Route::apiResource('categories', CategoryController::class);
 
     Route::get('/sellers', [SellerController::class, 'index']);
@@ -186,17 +192,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 Route::apiResource('articles', ArticleController::class)->only(['index', 'show']);
 
 Route::apiResource('article/{articleId}/article-comments', ArticleCommentController::class)->only(['index', 'show']);
-Route::get('/forum', [ForumController::class, 'index']);
 
-
-
-Route::get('/forum/home', [ForumController::class, 'home']);
-
-Route::get('/forum/{id}', [ForumController::class, 'show']);
-Route::get('/forum', [ForumController::class, 'index']);
-
-
-Route::get('forum/{forumId}/comments', [ForumCommentController::class, 'index']);
 
 Route::get('/forums', [ForumController::class, 'index']);
 Route::get('/forums/by-tag/{tagId}', [ForumController::class, 'filterByTag']);
@@ -209,3 +205,4 @@ Route::get('/forums/{forumId}/comments', [ForumCommentController::class, 'index'
 
 
 Route::get('/forum/{forumId}/comments', [ForumCommentController::class, 'index']);
+Route::get('/forum-tags', [ForumTagController::class, 'index']);

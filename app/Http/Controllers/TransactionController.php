@@ -9,13 +9,19 @@ use App\Models\Transaction;
 use App\Models\TransactionItem;
 use App\Models\Product;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 use Exception;
 
 class TransactionController extends Controller
 {
-    public function index(Request $request)
+public function index(Request $request)
 {
     try {
+        $user = $request->user();
+
+        // Check if the user is a seller
+        $isSeller = $user->roles()->where('name', 'seller')->exists();
+
         $query = Transaction::with([
             'items.product.category',
             'items.product.reviews.user.roles',
@@ -23,9 +29,14 @@ class TransactionController extends Controller
             'user'
         ]);
 
-        // Filter by authenticated user
-        if ($request->filled('user_id')) {
-            $query->where('user_id', $request->user_id);
+        if ($isSeller) {
+            // Filter transactions based on the products owned by the seller
+            $query->whereHas('items.product', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            });
+        } else {
+            // Filter by authenticated user
+            $query->where('user_id', $user->id);
         }
 
         // Search filter
@@ -42,7 +53,7 @@ class TransactionController extends Controller
             });
         }
 
-        // Status filter - validate allowed values 
+        // Status filter - validate allowed values
         if ($request->filled('status')) {
             $allowedStatuses = ['pending', 'processing', 'completed', 'cancelled'];
             $statuses = array_intersect(explode(',', $request->status), $allowedStatuses);
@@ -56,7 +67,12 @@ class TransactionController extends Controller
             $query->whereIn('payment_status', $paymentStatuses);
         }
 
-        $perPage = min($request->limit ?? 10, 100);
+        if ($request->filled('user_id')) {
+            $query->where('user_id', $request->user_id);
+        }
+
+
+        $perPage = min($request->limit ?? 100, 100);
         $transactions = $query->orderBy('created_at', 'desc')
                             ->paginate($perPage);
 
@@ -109,6 +125,7 @@ public function store(Request $request)
             'message' => 'Address is required to make a transaction.'
         ], 400);
     }
+
     $request->validate([
         'items' => 'nullable|array|min:1',
         'items.*.product_id' => 'required_with:items|exists:products,id',
@@ -117,11 +134,10 @@ public function store(Request $request)
     ]);
 
     try {
+        $itemsGroupedByStore = [];
         $totalAmount = 0;
-        $items = [];
 
         if ($request->filled('items')) {
-            // Direct purchase
             foreach ($request->items as $item) {
                 $product = Product::lockForUpdate()->find($item['product_id']);
                 if (!$product) {
@@ -133,69 +149,54 @@ public function store(Request $request)
                 }
 
                 $subtotal = $product->price * $item['quantity'];
-                $totalAmount += $subtotal;
+                $storeId = $product->user_id; // Assuming user_id is the store ID
 
-                $items[] = [
+                $itemsGroupedByStore[$storeId][] = [
                     'product' => $product,
                     'quantity' => $item['quantity'],
                     'price' => $product->price,
                     'subtotal' => $subtotal
                 ];
-            }
-        } else {
-            // Purchase from cart
-            $cart = Cart::with('items.product')->where('user_id', Auth::id())->firstOrFail();
 
-            foreach ($cart->items as $cartItem) {
-                $product = $cartItem->product;
-                if ($product->stock < $cartItem->quantity) {
-                    throw new Exception("Insufficient stock for product: {$product->name}");
-                }
-
-                $subtotal = $product->price * $cartItem->quantity;
                 $totalAmount += $subtotal;
-
-                $items[] = [
-                    'product' => $product,
-                    'quantity' => $cartItem->quantity,
-                    'price' => $product->price,
-                    'subtotal' => $subtotal
-                ];
             }
         }
 
+        // Create a single transaction
         $transaction = Transaction::create([
-            'user_id' => Auth::id(),
-            'transaction_number' => 'TRX-' . Str::random(10),
+            'user_id' => $user->id,
+            'transaction_number' => 'TRX-' . strtoupper(Str::random(10)),
             'total_amount' => $totalAmount,
             'status' => 'pending',
             'payment_status' => 'unpaid',
-            'notes' => $request->notes
+            'notes' => $request->notes,
+            'address' => $user->address
         ]);
 
-        foreach ($items as $item) {
-            TransactionItem::create([
-                'transaction_id' => $transaction->id,
-                'product_id' => $item['product']->id,
-                'quantity' => $item['quantity'],
-                'price' => $item['price'],
-                'subtotal' => $item['subtotal']
-            ]);
+        foreach ($itemsGroupedByStore as $storeId => $items) {
+            foreach ($items as $item) {
+                $transaction->items()->create([
+                    'product_id' => $item['product']->id,
+                    'quantity' => $item['quantity'],
+                    'price' => $item['price'],
+                    'subtotal' => $item['subtotal']
+                ]);
 
-            $item['product']->decrement('stock', $item['quantity']);
-        }
-
-        // Clear the cart after transaction
-        if (!$request->filled('items')) {
-            $cart->items()->delete();
+                // Increment the total sales count for the product
+                $item['product']->increment('total_sales', $item['quantity']);
+            }
         }
 
         return response()->json([
             'message' => 'Transaction created successfully',
-            'data' => $transaction->load('items.product')
-        ], 201);
+            'data' => $transaction
+        ]);
     } catch (Exception $e) {
-        return response()->json(['message' => 'Transaction failed', 'error' => $e->getMessage()], 400);
+        Log::error('Error creating transaction: ' . $e->getMessage());
+        return response()->json([
+            'message' => 'Failed to create transaction',
+            'error' => $e->getMessage()
+        ], 500);
     }
 }
 
@@ -275,7 +276,7 @@ public function store(Request $request)
     //     if ($transaction->user_id !== Auth::id() or Auth::user()->role !== 'admin') {
     //         return response()->json(['error' => 'Forbidden'], 403);
     //     }
-        
+
 
     //     $transaction->delete();
     //     return response()->json(['message' => 'Transaction deleted successfully']);

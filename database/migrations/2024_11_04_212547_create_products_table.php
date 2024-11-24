@@ -17,8 +17,11 @@ return new class extends Migration
             $table->integer('price');
             $table->foreignId('category_id')->constrained('categories')->onDelete('cascade');
             $table->integer('stock');
+            $table->unsignedBigInteger('total_sales')->default(0);
             $table->string('image_url')->nullable();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('user_id');
+            $table->foreign('user_id')->references('user_id')->on('sellers')->onDelete('cascade');
+            
             $table->timestamps();
         });
     }

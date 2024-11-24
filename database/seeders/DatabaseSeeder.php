@@ -23,10 +23,14 @@ class DatabaseSeeder extends Seeder
             TagSeeder::class,
             ArticleSeeder::class,
             CategorySeeder::class,
-            ProductSeeder::class,
             SellerSeeder::class,
+            ProductSeeder::class,
             TransactionSeeder::class,
             ReviewSeeder::class,
+            ForumSeeder::class,
+            ForumCommentSeeder::class,
+            ForumTagSeeder::class,
+            CartSeeder::class,
         ]);
     }
 }

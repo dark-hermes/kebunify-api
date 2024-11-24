@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\User;
+use App\Models\Seller;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -21,6 +22,14 @@ class ProductFactory extends Factory
 
     public function definition()
     {
+        // Ensure the user_id is from a user who is a seller
+        $seller = Seller::inRandomOrder()->first();
+
+        // If no seller is found, create one
+        if (!$seller) {
+            $seller = Seller::factory()->create();
+        }
+
         return [
             'name' => $this->faker->word,
             'description' => $this->faker->paragraph,
@@ -28,7 +37,7 @@ class ProductFactory extends Factory
             'category_id' => Category::inRandomOrder()->first()->id,
             'stock' => $this->faker->numberBetween(1, 100),
             'image_url' => $this->faker->imageUrl(),
-            'user_id' => User::inRandomOrder()->first()->id,
+            'user_id' => $seller->user_id, // Use the user_id from the seller
         ];
     }
 }

@@ -14,10 +14,13 @@ return new class extends Migration
         Schema::create('sellers', function (Blueprint $table) {
             $table->id();
             $table->string('store_name');
-            $table->text('address');
-            $table->text('avatar')->nullable();
-            $table->enum('status', ['ACTIVE', 'INACTIVE'])->default('ACTIVE');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->string('address');
+            $table->string('avatar')->nullable();
+            $table->string('status')->default('active');
+            $table->unsignedBigInteger('user_id');
+            $table->string('location')->nullable();
+            $table->text('description')->nullable();
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();
         });
     }

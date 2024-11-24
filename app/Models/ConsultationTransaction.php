@@ -12,7 +12,26 @@ class ConsultationTransaction extends Model
         'payment_receipt',
         'snap_token',
         'amount',
+        'status',
     ];
+
+    protected $appends = [
+        'status_label',
+    ];
+
+    public function getStatusLabelAttribute()
+    {
+        switch ($this->status) {
+            case 'pending':
+                return 'Menunggu Pembayaran';
+            case 'success':
+                return 'Pembayaran Berhasil';
+            case 'failed':
+                return 'Pembayaran Gagal';
+            default:
+                return 'Menunggu Pembayaran';
+        }
+    }
 
     public function consultation()
     {

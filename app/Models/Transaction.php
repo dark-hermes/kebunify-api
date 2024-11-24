@@ -14,7 +14,8 @@ class Transaction extends Model
         'total_amount',
         'status',
         'payment_status',
-        'notes'
+        'notes', 
+        'address'
     ];
 
     protected $casts = [
