@@ -17,6 +17,7 @@ return new class extends Migration
             $table->double('amount');
             $table->string('snap_token')->nullable();
             $table->dateTime('payment_date')->nullable();
+            $table->enum('status', ['pending', 'success', 'failed'])->default('pending');
             $table->string('payment_receipt');
             $table->timestamps();
         });

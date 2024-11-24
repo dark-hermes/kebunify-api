@@ -30,8 +30,18 @@ class ConsultationController extends Controller
 
     public function getByUserId($userId)
     {
-        $consultations = Consultation::where('user_id', $userId)->get();
-        return response()->json($consultations, 200);
+        try {
+            $consultations = Consultation::where('user_id', $userId)->get();
+            return response()->json([
+                'message' => 'Konsultasi Ditemukan',
+                'data' => $consultations
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Konsultasi Tidak Ditemukan',
+                'error' => $e->getMessage()
+            ], 404);
+        }
     }
 
     public function show($id)
