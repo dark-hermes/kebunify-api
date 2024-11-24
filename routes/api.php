@@ -23,8 +23,9 @@ use App\Http\Controllers\VerificationEmailController;
 use App\Http\Controllers\ExpertSpecializationController;
 use App\Http\Controllers\ForumCommentController;
 use App\Http\Controllers\ForumController;
-use App\Http\Controllers\TagsController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\ForumTagController;
+
 
 Route::group(['middleware' => 'guest'], function () {
     Route::post('/login',  [AuthController::class, 'login'])->name('login')->middleware('throttle:6,1');
@@ -110,7 +111,9 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('expert-specializations/list', [ExpertSpecializationController::class, 'list']);
     Route::apiResource('expert-specializations', ExpertSpecializationController::class);
 
-    // Route::apiResource('tags', TagsController::class);
+   
+
+
 
     Route::post('/forums', [ForumController::class, 'store']); 
     Route::put('/forums/{id}', [ForumController::class, 'update']); 
@@ -190,16 +193,8 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 Route::apiResource('articles', ArticleController::class)->only(['index', 'show']);
 
 Route::apiResource('article/{articleId}/article-comments', ArticleCommentController::class)->only(['index', 'show']);
-Route::get('/forum', [ForumController::class, 'index']);
 
 
-Route::get('/forum/home', [ForumController::class, 'home']);
-
-Route::get('/forum/{id}', [ForumController::class, 'show']);
-Route::get('/forum', [ForumController::class, 'index']);
-
-
-Route::get('forum/{forumId}/comments', [ForumCommentController::class, 'index']);
 Route::get('/forums', [ForumController::class, 'index']);
 Route::get('/forums/by-tag/{tagId}', [ForumController::class, 'filterByTag']);
 Route::get('/forums/home', [ForumController::class, 'home']);
@@ -207,7 +202,4 @@ Route::get('/forums/latest', [ForumController::class, 'listLatest']);
 Route::get('/forums/popular', [ForumController::class, 'listPopular']);
 Route::get('/forums/{id}', [ForumController::class, 'show']);
 Route::get('/forums/{forumId}/comments', [ForumCommentController::class, 'index']);
-
-
-
-Route::get('/forum/{forumId}/comments', [ForumCommentController::class, 'index']);
+Route::get('/forum-tags', [ForumTagController::class, 'index']);

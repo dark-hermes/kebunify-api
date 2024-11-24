@@ -27,6 +27,9 @@ class DatabaseSeeder extends Seeder
             ProductSeeder::class,
             TransactionSeeder::class,
             ReviewSeeder::class,
+            ForumSeeder::class,
+            ForumCommentSeeder::class,
+            ForumTagSeeder::class,
             CartSeeder::class,
         ]);
     }
