@@ -124,6 +124,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::put('/forum-comments/{id}', [ForumCommentController::class, 'update']);
     Route::delete('/forum-comments/{id}', [ForumCommentController::class, 'destroy']);
 
+    Route::get('articles-list', [ArticleController::class, 'list']);
     Route::apiResource('articles', ArticleController::class)->except(['index', 'show']);
     Route::post('articles', [ArticleController::class, 'store']);
     Route::post('articles/{id}', [ArticleController::class, 'update']);

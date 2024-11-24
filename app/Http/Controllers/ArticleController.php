@@ -66,7 +66,7 @@ class ArticleController extends Controller implements HasMiddleware
     // {
 
         $search = $request->query('search');
-        $paginate = $request->query('paginate');
+        $limit = $request->query('limit') ?? 9;
 
 
         try {
@@ -76,9 +76,32 @@ class ArticleController extends Controller implements HasMiddleware
                         ->orWhere('content', 'like', '%' . $search . '%');
                 });
 
-            $articles = ! $paginate
+            $articles = ! $limit
                 ? $articles->get()
-                : $articles->paginate($paginate);
+                : $articles->paginate($limit);
+
+            return response()->json([
+                'message' => __('http-statuses.200'),
+                'data' => $articles,
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('http-statuses.500'),
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    public function list(Request $request)
+    {
+        $search = $request->query('search');
+
+        try {
+            $articles = Article::query()
+                ->when($search, function ($query, $search) {
+                    return $query->where('title', 'like', '%' . $search . '%')
+                        ->orWhere('content', 'like', '%' . $search . '%');
+                })->get();
 
             return response()->json([
                 'message' => __('http-statuses.200'),
