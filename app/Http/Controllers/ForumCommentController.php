@@ -13,7 +13,7 @@ class ForumCommentController extends Controller
         try {
             $comments = ForumComment::where('forum_id', $forumId)
                 ->whereNull('parent_id')
-                ->with(['replies', 'user:id,name'])
+                ->with(['replies.author:id,name', 'author:id,name']) 
                 ->get();
 
             return response()->json([
@@ -45,7 +45,7 @@ class ForumCommentController extends Controller
 
             return response()->json([
                 'message' => __('http-statuses.201'),
-                'data' => $comment->load('user:id,name', 'replies'),
+                'data' => $comment->load('author:id,name', 'replies.author:id,name'), 
             ], 201);
         } catch (\Throwable $th) {
             return response()->json([
@@ -72,7 +72,7 @@ class ForumCommentController extends Controller
 
             return response()->json([
                 'message' => __('http-statuses.200'),
-                'data' => $comment,
+                'data' => $comment->load('author:id,name'), 
             ]);
         } catch (\Throwable $th) {
             return response()->json([
