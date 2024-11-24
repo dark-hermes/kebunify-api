@@ -23,15 +23,16 @@ use App\Http\Controllers\VerificationEmailController;
 use App\Http\Controllers\ExpertSpecializationController;
 use App\Http\Controllers\ForumCommentController;
 use App\Http\Controllers\ForumController;
-use App\Http\Controllers\TagsController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\ForumTagController;
+
 
 Route::group(['middleware' => 'guest'], function () {
     Route::post('/login',  [AuthController::class, 'login'])->name('login')->middleware('throttle:6,1');
     Route::post('/register', [AuthController::class, 'register'])->name('register');
     Route::post('/email/password', [PasswordResetController::class, 'setResetLinkEmail']);
     Route::post('/email/password-reset', [PasswordResetController::class, 'reset'])->middleware('signed')->name('password.reset');
-    Route::get('tags', [ArticleController::class, 'getTags']);
+    Route::get('getTag', [ArticleController::class, 'getTags']);
     Route::apiResource('articles', ArticleController::class)->only(['index', 'show']);
 });
 
@@ -112,8 +113,6 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('expert-specializations/list', [ExpertSpecializationController::class, 'list']);
     Route::apiResource('expert-specializations', ExpertSpecializationController::class);
 
-    // Route::apiResource('tags', TagsController::class);
-
     Route::post('/forums', [ForumController::class, 'store']);
     Route::put('/forums/{id}', [ForumController::class, 'update']);
     Route::delete('/forums/{id}', [ForumController::class, 'destroy']);
@@ -125,13 +124,17 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::delete('/forum-comments/{id}', [ForumCommentController::class, 'destroy']);
 
     Route::apiResource('articles', ArticleController::class)->except(['index', 'show']);
-    Route::post('articles/{id}/upload-image', [ArticleController::class, 'uploadImage']);
+    Route::post('articles', [ArticleController::class, 'store']);
+    Route::post('articles/{id}', [ArticleController::class, 'update']);
     Route::get('articles/expert/{id}', [ArticleController::class, 'getArticlesByExpert']);
-    Route::put('articles/{id}/publish', [ArticleController::class, 'publish']);
 
+    Route::put('articles/{id}/publish', [ArticleController::class, 'publish']);
+    Route::post('articles/{id}/upload-image', [ArticleController::class, 'uploadImage']);
+    Route::delete('articles/{id}/delete-image', [ArticleController::class, 'deleteImage']);
 
 
     Route::apiResource('article/{articleId}/article-comments', ArticleCommentController::class)->except(['index', 'show']);
+    Route::delete('article/{articleId}/article-comments', [ArticleCommentController::class, 'destroy']);
 
     Route::get('chats/{consultation_id}', [ChatController::class, 'index']);
     Route::post('chats/{consultation_id}', [ChatController::class, 'store']);
@@ -183,7 +186,6 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::put('/documents/{id}/approve', [DocumentController::class, 'approveApplication']);
     Route::put('/documents/{id}/reject', [DocumentController::class, 'rejectApplication']);
 
-    // Route::apiResource('article/{articleId}/article-comments', ArticleCommentController::class)->only(['index', 'show']);
 
 
 
@@ -192,16 +194,8 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 Route::apiResource('articles', ArticleController::class)->only(['index', 'show']);
 
 Route::apiResource('article/{articleId}/article-comments', ArticleCommentController::class)->only(['index', 'show']);
-Route::get('/forum', [ForumController::class, 'index']);
 
 
-Route::get('/forum/home', [ForumController::class, 'home']);
-
-Route::get('/forum/{id}', [ForumController::class, 'show']);
-Route::get('/forum', [ForumController::class, 'index']);
-
-
-Route::get('forum/{forumId}/comments', [ForumCommentController::class, 'index']);
 Route::get('/forums', [ForumController::class, 'index']);
 Route::get('/forums/by-tag/{tagId}', [ForumController::class, 'filterByTag']);
 Route::get('/forums/home', [ForumController::class, 'home']);
@@ -213,3 +207,4 @@ Route::get('/forums/{forumId}/comments', [ForumCommentController::class, 'index'
 
 
 Route::get('/forum/{forumId}/comments', [ForumCommentController::class, 'index']);
+Route::get('/forum-tags', [ForumTagController::class, 'index']);

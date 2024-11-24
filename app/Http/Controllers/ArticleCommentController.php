@@ -100,5 +100,23 @@ class ArticleCommentController extends Controller
     public function destroy(string $id)
     {
         //
+        try{
+        $comment = ArticleComment::findOrFail($id);
+        $comment->delete();
+
+        return response()->json([
+            'message' => 'Comment deleted successfully'
+        ]);
+    } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        return response()->json([
+            'message' => 'Comment not found'
+        ], 404);
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => 'Failed to delete comment',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+
     }
 }
