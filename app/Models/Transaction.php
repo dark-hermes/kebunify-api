@@ -15,7 +15,8 @@ class Transaction extends Model
         'status',
         'payment_status',
         'notes', 
-        'address'
+        'address',
+        'snap_token'
     ];
 
     protected $casts = [

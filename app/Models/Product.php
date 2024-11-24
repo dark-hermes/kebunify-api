@@ -43,4 +43,9 @@ class Product extends Model
     {
         return $this->attributes['user_id'];
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

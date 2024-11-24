@@ -10,6 +10,8 @@ use App\Models\TransactionItem;
 use App\Models\Product;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+
 use Exception;
 
 class TransactionController extends Controller
@@ -187,10 +189,14 @@ public function store(Request $request)
             }
         }
 
+        CartItem::whereHas('cart', function ($query) use ($user) {
+            $query->where('user_id', $user->id);
+        })->whereIn('product_id', array_column($request->items, 'product_id'))->delete();
+
         return response()->json([
             'message' => 'Transaction created successfully',
             'data' => $transaction
-        ]);
+        ], 201);
     } catch (Exception $e) {
         Log::error('Error creating transaction: ' . $e->getMessage());
         return response()->json([
@@ -200,7 +206,7 @@ public function store(Request $request)
     }
 }
 
-    public function updateStatus(Request $request, Transaction $transaction)
+public function updateStatus(Request $request, $id)
     {
         $request->validate([
             'status' => 'required|in:pending,processing,completed,cancelled',
@@ -208,6 +214,8 @@ public function store(Request $request)
         ]);
 
         try {
+            $transaction = Transaction::findOrFail($id);
+
             $data = [
                 'status' => $request->status,
                 'notes' => $request->input('notes', $transaction->notes)
@@ -224,7 +232,11 @@ public function store(Request $request)
                 'message' => 'Transaction status updated successfully',
                 'data' => $transaction->fresh(['items.product', 'user'])
             ]);
+        } catch (ModelNotFoundException $e) {
+            Log::error('Transaction not found: ' . $e->getMessage());
+            return response()->json(['message' => 'Transaction not found', 'error' => $e->getMessage()], 404);
         } catch (Exception $e) {
+            Log::error('Error updating transaction status: ' . $e->getMessage());
             return response()->json(['message' => 'Failed to update transaction status', 'error' => $e->getMessage()], 400);
         }
     }

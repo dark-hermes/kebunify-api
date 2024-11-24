@@ -170,9 +170,10 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     Route::get('/transactions', [TransactionController::class, 'index']);
     Route::post('/transactions', [TransactionController::class, 'store']);
+    Route::post('/transactions_pay', [TransactionController::class, 'storeTransaction']);
     Route::get('/transactions/{id}', [TransactionController::class, 'show']);
-    Route::put('/transactions/{transaction}/status', [TransactionController::class, 'updateStatus']);
-    Route::put('/transactions/{transaction}/payment-status', [TransactionController::class, 'updatePaymentStatus']);
+    Route::put('/transactions/{transaction_id}/status', [TransactionController::class, 'updateStatus']);
+    Route::put('/transactions/{transaction_id}/payment-status', [TransactionController::class, 'updatePaymentStatus']);
 
     Route::post('/apply-role', [DocumentController::class, 'applyForRole']);
     Route::get('/documents', [DocumentController::class, 'index']);

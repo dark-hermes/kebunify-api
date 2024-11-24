@@ -54,6 +54,16 @@ class ReviewController extends Controller
         }
 
         try {
+            // Check if the use made a transaction for the specified product
+            $hasTransaction = Transaction::where('user_id', Auth::id())
+                ->whereHas('items', function ($query) use ($productId) {
+                    $query->where('product_id', $productId);
+                })
+                ->exists();
+            if (!$hasTransaction) {
+                return response()->json(['error' => 'You can only review products from transactions you made'], 403);
+            }
+
             // Check if the user has a completed transaction for the specified product
             $hasCompletedTransaction = Transaction::where('user_id', Auth::id())
                 ->whereHas('items', function ($query) use ($productId) {
@@ -73,7 +83,10 @@ class ReviewController extends Controller
                 'comment' => $request->comment,
             ]);
 
-            return response()->json($review, 201);
+            return response()->json([
+                'message' => 'Review created successfully',
+                'data' => $review
+            ]);
         } catch (Exception $e) {
             return response()->json(['message' => 'Failed to create review', 'error' => $e->getMessage()], 400);
         }

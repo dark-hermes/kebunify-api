@@ -20,6 +20,7 @@ return new class extends Migration
             $table->enum('payment_status', ['unpaid', 'paid', 'failed', 'refunded'])->default('unpaid');
             $table->text('notes')->nullable();
             $table->text('address')->nullable();
+            $table->string('snap_token')->nullable();
             $table->timestamps();
         });
     }
