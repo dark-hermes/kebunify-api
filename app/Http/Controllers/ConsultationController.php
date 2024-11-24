@@ -211,4 +211,41 @@ class ConsultationController extends Controller
 
         return response()->json(['message' => 'Consultation deleted'], 200);
     }
+
+    public function rate(Request $request, $consultationId)
+    {
+        $request->validate([
+            'rating' => 'required|numeric|min:1|max:5',
+            'comment' => 'nullable|string',
+        ]);
+
+        try {
+            $consultation = Consultation::find($consultationId);
+
+            if (!$consultation) {
+                return response()->json(['message' => 'Sesi konsultasi tidak ditemukan.'], 404);
+            }
+
+            if ($consultation->rating) {
+                return response()->json(['message' => 'Anda sudah memberikan rating untuk sesi konsultasi ini.'], 400);
+            }
+
+            $rating = $consultation->rating()->create([
+                'user_id' => Auth::id(),
+                'expert_id' => $consultation->expert_id,
+                'rating' => $request->rating,
+                'comment' => $request->comment,
+            ]);
+
+            return response()->json([
+                'message' => 'Expert rated successfully',
+                'data' => $rating,
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => __('http-statuses.500'),
+                'error' => config('app.debug') ? $th->getMessage() : null,
+            ], 500);
+        }
+    }
 }

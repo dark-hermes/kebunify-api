@@ -22,7 +22,7 @@ class Consultation extends Model
         'status'
     ];
 
-    protected $with = ['user', 'expert', 'transaction'];
+    protected $with = ['user', 'expert', 'transaction', 'rating'];
 
     protected $appends = [
         'status_label',
@@ -58,5 +58,10 @@ class Consultation extends Model
     public function transaction()
     {
         return $this->hasOne(ConsultationTransaction::class);
+    }
+
+    public function rating()
+    {
+        return $this->hasOne(ExpertRating::class);
     }
 }
