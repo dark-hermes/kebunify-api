@@ -13,20 +13,42 @@ class SellerController extends Controller
     public function index(Request $request)
     {
         try {
-            $query = Seller::with('user');
+            // Load essential relationships only
+            $query = Seller::with([
+                'user.roles',
+                'user:id,name,email,avatar'
+            ]);
 
+            // Filter by user_id
             if ($request->has('user_id')) {
                 $query->where('user_id', $request->input('user_id'));
             }
 
+            // Filter by store_name
+            if ($request->has('store_name')) {
+                $storeName = $request->input('store_name');
+                $query->where('store_name', 'LIKE', "%{$storeName}%");
+            }
+
+            // Search in store_name, address, and user name
             if ($request->has('search')) {
                 $search = $request->input('search');
-                $query->where('name', 'LIKE', "%{$search}%");
+                $query->where(function($q) use ($search) {
+                    $q->where('store_name', 'LIKE', "%{$search}%")
+                      ->orWhere('address', 'LIKE', "%{$search}%")
+                      ->orWhereHas('user', function($userQuery) use ($search) {
+                          $userQuery->where('name', 'LIKE', "%{$search}%")
+                                    ->orWhere('email', 'LIKE', "%{$search}%");
+                      });
+                });
             }
+
+            // Execute query and get results
+            $sellers = $query->get();
 
             return response()->json([
                 'message' => 'Sellers retrieved successfully',
-                'data' => $query->get()
+                'data' => $sellers
             ]);
         } catch (\Exception $e) {
             Log::error('Error fetching sellers: ' . $e->getMessage());

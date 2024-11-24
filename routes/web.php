@@ -1,8 +1,14 @@
 <?php
 
+use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 
 Route::get('/', function () {
     return view('welcome');
 });
+
+
+Route::get('payments/{type}/{snap_token}', [PaymentController::class, 'show']);
+// Route::get('payments/consultation', [PaymentController::class, 'updateConsultationStatus']);
+Route::get('payments/{type}/{snap_token}/status', [PaymentController::class, 'updateConsultationStatus']);

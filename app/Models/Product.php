@@ -1,14 +1,8 @@
 <?php
-
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-
-use App\Models\User;
-use App\Models\Reviews;
-use App\Models\Category;
-use App\Models\Seller;
+use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
@@ -20,12 +14,15 @@ class Product extends Model
         'price',
         'category_id',
         'stock',
+        'total_sales',
         'image_url',
         'user_id',
         'review_id',
     ];
 
-    protected $with = ['category', 'reviews', 'user'];
+    protected $with = ['category', 'reviews.user', 'seller.user'];
+
+    protected $appends = ['seller_id'];
 
     public function category()
     {
@@ -37,21 +34,13 @@ class Product extends Model
         return $this->hasMany(Review::class);
     }
 
-    public function user()
+    public function seller()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(Seller::class, 'user_id');
     }
-
-    // Accessor to rename `user_id` to `seller_id` in JSON response
-    protected $appends = ['seller_id'];
 
     public function getSellerIdAttribute()
     {
         return $this->attributes['user_id'];
-    }
-
-    public function transactions()
-    {
-        return $this->hasMany(Transaction::class);
     }
 }
