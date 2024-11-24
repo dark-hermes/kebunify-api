@@ -59,6 +59,13 @@ class SellerController extends Controller
         }
     }
 
+    public function checkIfSeller($user_id)
+    {
+        $isSeller = Seller::where('user_id', $user_id)->exists();
+
+        return response()->json(['isSeller' => $isSeller]);
+    }
+
     public function promote(Request $request, $user_id)
     {
         try {

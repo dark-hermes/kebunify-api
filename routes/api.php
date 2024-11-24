@@ -166,6 +166,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('/sellers', [SellerController::class, 'index']);
     Route::post('/sellers/promote/{user_id}', [SellerController::class, 'promote']);
     Route::get('/sellers/{id}', [SellerController::class, 'show']);
+    Route::get('/sellers/check/{user_id}', [SellerController::class, 'checkIfSeller']);
     Route::put('/sellers/{id}', [SellerController::class, 'update']);
     Route::delete('/sellers/{id}', [SellerController::class, 'destroy']);
 

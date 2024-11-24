@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\ConsultationTransaction;
+use App\Models\Transaction;
 
 class PaymentController extends Controller
 {
@@ -46,5 +47,37 @@ class PaymentController extends Controller
                 'status' => $status,
                 'message' => $message
             ]);
+    }
+
+    public function updateProductPaymentStatus(Request $request, string $type, string $snap_token)
+    {
+        $request->validate([
+            'status' => 'required|in:success,failed',
+        ]);
+
+        $status = $request->query('payment_status');
+
+        $transaction = Transaction::where('snap_token', $snap_token)->firstOrFail();
+
+        if ($transaction) {
+            if ($status === 'success') {
+                $transaction->update([
+                    'payment_status' => 'paid'
+                ]);
+
+                $message = 'Pembayaran berhasil! Pesanan Anda akan segera diproses.';
+            } else {
+                $transaction->update([
+                    'payment_status' => 'failed'
+                ]);
+
+                $message = 'Pembayaran gagal! Silakan coba lagi.';
+            }
+        }
+
+        return view('payments.product', [
+            'status' => $status,
+            'message' => $message
+        ]);
     }
 }

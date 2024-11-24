@@ -8,6 +8,10 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
 use App\Models\Product;
+
+use Midtrans\Config;
+use Midtrans\Snap;
+use App\Models\CartItem;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -118,6 +122,7 @@ public function show($id)
     }
 }
 
+
 public function store(Request $request)
 {
     $user = $request->user();
@@ -189,13 +194,42 @@ public function store(Request $request)
             }
         }
 
-        CartItem::whereHas('cart', function ($query) use ($user) {
+        // Check if items exist in the cart and remove them
+        $cartItems = CartItem::whereHas('cart', function ($query) use ($user) {
             $query->where('user_id', $user->id);
-        })->whereIn('product_id', array_column($request->items, 'product_id'))->delete();
+        })->whereIn('product_id', array_column($request->items, 'product_id'))->get();
+
+        if ($cartItems->isNotEmpty()) {
+            CartItem::whereHas('cart', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })->whereIn('product_id', array_column($request->items, 'product_id'))->delete();
+        }
+
+        // Midtrans integration
+        Config::$serverKey = config('midtrans.server_key');
+        Config::$isProduction = config('midtrans.is_production');
+        Config::$isSanitized = config('midtrans.is_sanitized');
+        Config::$is3ds = config('midtrans.is_3ds');
+
+        $params = [
+            'transaction_details' => [
+                'order_id' => $transaction->transaction_number,
+                'gross_amount' => $transaction->total_amount,
+            ],
+            'customer_details' => [
+                'first_name' => $user->name,
+                'email' => $user->email,
+            ],
+        ];
+
+        $snapToken = Snap::getSnapToken($params);
+
+        $transaction->snap_token = $snapToken;
+        $transaction->save();
 
         return response()->json([
             'message' => 'Transaction created successfully',
-            'data' => $transaction
+            'data' => $transaction,
         ], 201);
     } catch (Exception $e) {
         Log::error('Error creating transaction: ' . $e->getMessage());
