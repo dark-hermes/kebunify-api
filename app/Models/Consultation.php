@@ -27,6 +27,7 @@ class Consultation extends Model
     public function getIsPaidAttribute()
     {
         // return $this->transaction->payment_date !== null;
+        // return $this->transaction->status === 'success';
         return true;
     }
 
