@@ -18,7 +18,7 @@ class PaymentController extends Controller
         ]);
     }
 
-    public function updateConsultationStatus(Request $request, string $type, string $snap_token)
+    public function updateConsultationStatus(Request $request, string $snap_token)
     {
         $request->validate([
             'status' => 'required|in:success,failed',
