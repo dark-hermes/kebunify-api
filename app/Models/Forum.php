@@ -15,6 +15,8 @@ class Forum extends Model
         'likes',
     ];
 
+    protected $appends = ['reply_count'];
+
     public function writer()
     {
         return $this->belongsTo(User::class, 'user_id', 'id');
@@ -28,6 +30,11 @@ class Forum extends Model
     public function comments()
     {
         return $this->hasMany(ForumComment::class, 'forum_id');
+    }
+
+    public function getReplyCountAttribute()
+    {
+        return $this->comments()->count();
     }
 
 }
